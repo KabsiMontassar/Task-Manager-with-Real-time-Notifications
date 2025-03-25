@@ -14,7 +14,7 @@ import { keys } from './config/keys';
 
 @Module({
   imports: [
-    MongooseModule.forRoot(keys.mongoURI),
+    MongooseModule.forRoot(keys.mongoURI.toString()),
     MongooseModule.forFeature([{ name: User.name, schema: UserSchema }]),
     PassportModule.register({ defaultStrategy: 'jwt' }),
     JwtModule.register({
