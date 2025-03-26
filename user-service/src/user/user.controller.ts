@@ -2,6 +2,7 @@ import { Controller, Get, Put, Delete, Param, Body, UseGuards } from '@nestjs/co
 import { AuthGuard } from '@nestjs/passport';
 import { UserService } from './user.service';
 import { UpdateUserDto } from '../dto/user.dto';
+import { MessagePattern, Payload } from '@nestjs/microservices';
 
 @Controller('users')
 @UseGuards(AuthGuard('jwt'))
@@ -27,5 +28,10 @@ export class UserController {
     async delete(@Param('id') id: string) {
         await this.userService.delete(id);
         return { message: 'User deleted successfully' };
+    }
+
+    @MessagePattern({ cmd: 'get_user' })
+    async getUser(@Payload() data: { userId: string }) {
+        return this.userService.findById(data.userId);
     }
 }

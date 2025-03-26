@@ -1,0 +1,20 @@
+{
+  "name": "task-manager-with-real-time-notifications",
+  "version": "1.0.0",
+  "description": "A modern task management system built with microservices architecture, featuring real-time notifications and drag-n-drop task management.",
+  "main": "index.js",
+  "scripts": {
+    "start:api-gateway": "cd api-gateway && npm run start",
+    "start:user-service": "cd user-service && npm run start",
+    "start:task-service": "cd task-service && npm run start",
+    "start:notification-service": "cd notification-service && npm run start",
+    "start:all": "concurrently \"npm run start:api-gateway\" \"npm run start:user-service\" \"npm run start:task-service\" \"npm run start:notification-service\""
+  },
+  "keywords": [],
+  "author": "",
+  "license": "ISC",
+  "devDependencies": {
+    "concurrently": "^9.1.2"
+  }
+
+}

@@ -21,14 +21,18 @@ export class JwtStrategy extends PassportStrategy(Strategy) {
   async validate(payload: any) {
     try {
       const user = await firstValueFrom(
-        this.userService.send({ cmd: 'get_user' }, payload.sub)
+        this.userService.send({ cmd: 'get_user' }, { userId: payload.userId })
       );
 
       if (!user) {
         throw new UnauthorizedException();
       }
 
-      return user;
+      return {
+        id: user._id,
+        email: user.email,
+        role: user.role
+      };
     } catch (error) {
       throw new UnauthorizedException();
     }

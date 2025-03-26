@@ -44,36 +44,31 @@ export class AuthService {
 
     async login(loginUserDto: LoginUserDto): Promise<{ token: string }> {
         const { email, password } = loginUserDto;
-
-        // Find user
-        const user = await this.userModel.findOne({ email });
-        if (!user) {
-            throw new UnauthorizedException('Invalid credentials');
-        }
-
-        // Verify password
-        const isPasswordValid = await bcrypt.compare(password, user.password);
-        if (!isPasswordValid) {
-            throw new UnauthorizedException('Invalid credentials');
-        }
-
+        
+        // Find user and validate password
+        const user = await this.validateUser(email, password);
+        
         // Generate JWT
-        const token = this.jwtService.sign({ 
+        const token = this.jwtService.sign({
             userId: user._id,
             email: user.email,
-            role: user.role 
+            role: user.role
         });
 
         return { token };
     }
 
-    async validateUser(email: string): Promise<UserDocument> {
+    async validateUser(email: string, password: string): Promise<UserDocument> {
         const user = await this.userModel.findOne({ email });
         if (!user) {
-            throw new UnauthorizedException('User not found');
+            throw new UnauthorizedException('Invalid credentials');
         }
+
+        const isPasswordValid = await bcrypt.compare(password, user.password);
+        if (!isPasswordValid) {
+            throw new UnauthorizedException('Invalid credentials');
+        }
+
         return user;
     }
-
-    
 }

@@ -1,46 +1,51 @@
-import { Injectable, UnauthorizedException } from '@nestjs/common';
-import { JwtService } from '@nestjs/jwt';
-import { Inject } from '@nestjs/common';
+import { Injectable, Inject, UnauthorizedException } from '@nestjs/common';
 import { ClientProxy } from '@nestjs/microservices';
 import { firstValueFrom } from 'rxjs';
+import { JwtService } from '@nestjs/jwt';
 
 @Injectable()
 export class AuthService {
   constructor(
-    @Inject('USER_SERVICE') private readonly userService: ClientProxy,
+    @Inject('USER_SERVICE') private readonly userServiceClient: ClientProxy,
     private readonly jwtService: JwtService,
   ) {}
 
   async validateUser(email: string, password: string) {
-    const user = await firstValueFrom(
-      this.userService.send({ cmd: 'validate_user' }, { email, password })
-    );
-
-    if (!user) {
-      throw new UnauthorizedException('Invalid credentials');
+    try {
+      const user = await firstValueFrom(
+        this.userServiceClient.send({ cmd: 'validate_user' }, { email, password })
+      );
+      return user;
+    } catch (error) {
+      throw new UnauthorizedException(error.message || 'Invalid credentials');
     }
-
-    return user;
   }
 
   async login(user: any) {
-    const payload = { sub: user.id, email: user.email, role: user.role };
+    const payload = { 
+      userId: user._id,
+      email: user.email, 
+      role: user.role 
+    };
+    
     return {
       access_token: this.jwtService.sign(payload),
       user: {
-        id: user.id,
+        id: user._id,
         email: user.email,
-        role: user.role,
-        name: user.name,
-      },
+        role: user.role
+      }
     };
   }
 
   async register(createUserDto: any) {
-    const user = await firstValueFrom(
-      this.userService.send({ cmd: 'create_user' }, createUserDto)
-    );
-
-    return this.login(user);
+    try {
+      const result = await firstValueFrom(
+        this.userServiceClient.send({ cmd: 'register_user' }, createUserDto)
+      );
+      return result;
+    } catch (error) {
+      throw new UnauthorizedException(error.message || 'Registration failed');
+    }
   }
 }

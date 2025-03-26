@@ -6,11 +6,16 @@ export class AuthController {
   constructor(private readonly authService: AuthService) {}
 
   @Post('login')
-  @HttpCode(HttpStatus.OK)
-  async login(@Body() loginDto: { email: string; password: string }) {
+@HttpCode(HttpStatus.OK)
+async login(@Body() loginDto: { email: string; password: string }) {
+  try {
     const user = await this.authService.validateUser(loginDto.email, loginDto.password);
     return this.authService.login(user);
+  } catch (error) {
+    console.error('Login error in controller:', error);
+    throw error;
   }
+}
 
   @Post('register')
   async register(@Body() createUserDto: any) {

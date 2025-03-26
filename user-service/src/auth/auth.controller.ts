@@ -17,6 +17,8 @@ export class AuthController {
         return this.authService.login(loginUserDto);
     }
 
-
-
+    @MessagePattern({ cmd: 'validate_user' })
+    async validateUser(@Payload() data: { email: string; password: string }) {
+        return this.authService.validateUser(data.email, data.password);
+    }
 }
