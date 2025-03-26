@@ -67,11 +67,13 @@ export class AuthService {
         return { token };
     }
 
-    async validateUser(userId: string): Promise<UserDocument> {
-        const user = await this.userModel.findById(userId);
+    async validateUser(email: string): Promise<UserDocument> {
+        const user = await this.userModel.findOne({ email });
         if (!user) {
             throw new UnauthorizedException('User not found');
         }
         return user;
     }
+
+    
 }
