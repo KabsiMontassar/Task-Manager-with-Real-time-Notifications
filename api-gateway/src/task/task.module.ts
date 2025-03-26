@@ -2,19 +2,25 @@ import { Module } from '@nestjs/common';
 import { ClientsModule, Transport } from '@nestjs/microservices';
 import { TaskController } from './task.controller';
 import { TaskService } from './task.service';
-import { WebsocketGateway } from '../websocket/websocket.gateway';
+import { WebsocketModule } from '../websocket/websocket.module';
+import { AuthModule } from '../auth/auth.module';
 
 @Module({
   imports: [
+    AuthModule,
+    WebsocketModule,
     ClientsModule.register([
       {
         name: 'TASK_SERVICE',
         transport: Transport.TCP,
-        options: { port: 3002 },
+        options: {
+          host: 'localhost',
+          port: 3002,
+        },
       },
     ]),
   ],
   controllers: [TaskController],
-  providers: [TaskService, WebsocketGateway],
+  providers: [TaskService],
 })
 export class TaskModule {}

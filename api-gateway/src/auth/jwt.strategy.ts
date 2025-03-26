@@ -14,27 +14,43 @@ export class JwtStrategy extends PassportStrategy(Strategy) {
   ) {
     super({
       jwtFromRequest: ExtractJwt.fromAuthHeaderAsBearerToken(),
+      ignoreExpiration: false,
       secretOrKey: process.env.JWT_SECRET || 'error',
     });
   }
 
   async validate(payload: any) {
     try {
-      const user = await firstValueFrom(
-        this.userService.send({ cmd: 'get_user' }, { userId: payload.userId })
-      );
-
-      if (!user) {
-        throw new UnauthorizedException();
+      console.log('JWT Payload:', payload); // Debug log
+      
+      if (!payload || !payload.userId) {
+        console.log('Invalid payload structure'); // Debug log
+        throw new UnauthorizedException('Invalid token payload');
       }
 
-      return {
-        id: user._id,
-        email: user.email,
-        role: user.role
+      const user = await firstValueFrom(
+        this.userService.send({ cmd: 'get_user' }, { userId: payload.userId })
+      ).catch(err => {
+        console.log('User service error:', err); // Debug log
+        return null;
+      });
+
+      if (!user) {
+        console.log('User not found'); // Debug log
+        throw new UnauthorizedException('User not found');
+      }
+
+      const result = {
+        id: payload.userId,
+        email: payload.email,
+        role: payload.role
       };
+      
+      console.log('Validated user:', result); // Debug log
+      return result;
     } catch (error) {
-      throw new UnauthorizedException();
+      console.log('JWT validation error:', error); // Debug log
+      throw new UnauthorizedException('Invalid token');
     }
   }
 }

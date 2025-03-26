@@ -20,6 +20,6 @@ async function bootstrap() {
   await app.startAllMicroservices();
   
   // Start HTTP server on a different port
-  await app.listen(process.env.HTTP_PORT ?? 3002);
+  await app.listen(process.env.HTTP_PORT ?? 3001);
 }
 bootstrap();

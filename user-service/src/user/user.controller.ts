@@ -1,11 +1,9 @@
-import { Controller, Get, Put, Delete, Param, Body, UseGuards } from '@nestjs/common';
-import { AuthGuard } from '@nestjs/passport';
+import { Controller, Get, Put, Delete, Param, Body } from '@nestjs/common';
 import { UserService } from './user.service';
 import { UpdateUserDto } from '../dto/user.dto';
 import { MessagePattern, Payload } from '@nestjs/microservices';
 
 @Controller('users')
-@UseGuards(AuthGuard('jwt'))
 export class UserController {
     constructor(private readonly userService: UserService) {}
 
@@ -32,6 +30,14 @@ export class UserController {
 
     @MessagePattern({ cmd: 'get_user' })
     async getUser(@Payload() data: { userId: string }) {
-        return this.userService.findById(data.userId);
+        try {
+            console.log('Received get_user request with data:', data); // Debug log
+            const user = await this.userService.findById(data.userId);
+            console.log('Found user:', user); // Debug log
+            return user;
+        } catch (error) {
+            console.error('Error in getUser:', error); // Debug log
+            return null;
+        }
     }
 }

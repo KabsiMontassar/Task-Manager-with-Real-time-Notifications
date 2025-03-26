@@ -12,6 +12,7 @@ import { ClientsModule, Transport } from '@nestjs/microservices';
     JwtModule.register({
       secret: process.env.JWT_SECRET,
       signOptions: { expiresIn: '24h' },
+      global: true,
     }),
     ClientsModule.register([
       {
@@ -26,6 +27,6 @@ import { ClientsModule, Transport } from '@nestjs/microservices';
   ],
   controllers: [AuthController],
   providers: [AuthService, JwtStrategy],
-  exports: [JwtStrategy, PassportModule],
+  exports: [JwtStrategy, PassportModule, JwtModule],
 })
 export class AuthModule {}
