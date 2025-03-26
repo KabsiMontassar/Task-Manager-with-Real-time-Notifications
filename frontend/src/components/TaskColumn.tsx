@@ -4,19 +4,25 @@ import { TaskCard } from './TaskCard';
 import { Card, CardHeader, CardTitle, CardContent } from './ui/card';
 import { Button } from './ui/button';
 import { Plus } from 'lucide-react';
-import { Task } from '@/types/task';
+import { Task, TaskStatus } from '@/types/task';
 
 interface TaskColumnProps {
-  id: string;
+  id: TaskStatus;
   title: string;
   tasks: Task[];
 }
 
 export const TaskColumn = ({ id, title, tasks }: TaskColumnProps) => {
-  const { setNodeRef } = useDroppable({ id });
+  const { setNodeRef, isOver } = useDroppable({
+    id,
+    data: {
+      status: id,
+      accepts: 'task'
+    }
+  });
 
   return (
-    <Card className="h-full">
+    <Card className={`h-full ${isOver ? 'ring-2 ring-primary/50' : ''}`}>
       <CardHeader className="p-4">
         <div className="flex items-center justify-between">
           <CardTitle className="text-lg font-semibold">{title}</CardTitle>
