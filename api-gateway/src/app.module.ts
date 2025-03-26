@@ -14,6 +14,7 @@ import { WebsocketGateway } from './websocket/websocket.gateway';
     JwtModule.register({
       secret: process.env.JWT_SECRET,
       signOptions: { expiresIn: '24h' },
+      global: true,
     }),
     ClientsModule.register([
       {
