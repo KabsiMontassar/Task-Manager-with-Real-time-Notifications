@@ -1,41 +1,38 @@
-# Task Management System
+# Task Management System with Real-time Notifications
 
-A task management system built with microservices, featuring real-time notifications and drag-n-drop task management.
+A modern task management system built with microservices architecture, featuring real-time notifications and drag-n-drop task management.
 
 ## Project Structure
 
+```
 TaskManagment/
-├── frontend/               # React TypeScript frontend with Vite 
+├── frontend/               # React TypeScript frontend with Vite
 ├── api-gateway/           # API Gateway service
 ├── user-service/         # User authentication and management
 ├── task-service/        # Task and project management
 └── notification-service/ # Real-time notifications
+```
+
 ## Tech Stack
 
 ### Frontend
 - React (TypeScript) with Vite
 - ShadCN UI
-- Socket.io for real-time updates
+- React Query
+- React Hook Form + Yup
+- Socket.io-client
 - DND Kit for drag-n-drop
 
 ### Backend
 - NestJS microservices
-- MongoDB (User & Notifications)
+- MongoDB (User & Notification services)
 - PostgreSQL (Task service)
 - JWT Authentication
-- Socket.io for real-time
-
-## Features
-- User Authentication (JWT)
-- Role-based access (Admin, Manager, Employee)
-- Real-time task updates
-- Drag-n-drop task management
-- Task comments and attachments
-- Real-time notifications
+- Socket.io for real-time features
 
 ## Setup Instructions
 
-1. Install dependencies:
+1. Install dependencies for each service:
 ```bash
 # Frontend
 cd frontend
@@ -61,10 +58,19 @@ npm run start:dev
 cd notification-service
 npm install
 npm run start:dev
-Set up databases:
+```
 
-MongoDB for user and notification services
+2. Set up databases:
+- MongoDB for user-service and notification-service
+- PostgreSQL for task-service
 
-PostgreSQL for task service
+3. Configure environment variables (create .env files in each service)
 
-Configure environment variables (.env files for each service)
+## Features
+
+- User authentication (JWT)
+- Role-based access control (Admin, Manager, Employee)
+- Real-time task updates
+- Drag-n-drop task management
+- Task comments and attachments
+- Real-time notifications
