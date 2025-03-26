@@ -17,4 +17,17 @@ export class UserService {
       this.userServiceClient.send('user_find_by_email', { email }),
     );
   }
+
+  async findById(id: string) {
+    console.log('Finding user by ID:', id);
+    return firstValueFrom(this.userServiceClient.send({ cmd: 'get_user' }, { userId: id }));
+  }
+
+  async delete(id: string) {
+    return firstValueFrom(this.userServiceClient.send('user_delete', { id }));
+  }
+
+  async getProfile(userId: string) {
+    return firstValueFrom(this.userServiceClient.send('user_get_profile', { userId }));
+  }
 }

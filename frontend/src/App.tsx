@@ -1,6 +1,9 @@
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
-import { BrowserRouter, Routes, Route, Navigate } from 'react-router-dom';
-import { authService } from './services/auth.service';
+import { BrowserRouter, Routes, Route } from 'react-router-dom';
+import HomePage from './components/HomePage';
+import Login from './components/auth/Login';
+import Register from './components/auth/Register';
+import ProtectedRoute from './components/auth/ProtectedRoute';
 
 const queryClient = new QueryClient({
   defaultOptions: {
@@ -16,14 +19,12 @@ function App() {
     <QueryClientProvider client={queryClient}>
       <BrowserRouter>
         <Routes>
-          <Route path="/login" element={
-            authService.isAuthenticated() ? <Navigate to="/" /> : <div>Login</div>
-          } />
-          <Route path="/register" element={
-            authService.isAuthenticated() ? <Navigate to="/" /> : <div>Register</div>
-          } />
+          <Route path="/login" element={<Login />} />
+          <Route path="/register" element={<Register />} />
           <Route path="/" element={
-            authService.isAuthenticated() ? <div>Dashboard</div> : <Navigate to="/login" />
+            <ProtectedRoute>
+              <HomePage />
+            </ProtectedRoute>
           } />
         </Routes>
       </BrowserRouter>

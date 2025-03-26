@@ -6,11 +6,13 @@ import { AuthService } from './auth.service';
 import { JwtStrategy } from './jwt.strategy';
 import { ClientsModule, Transport } from '@nestjs/microservices';
 
+const JWT_SECRET = 'b09d24b7e1c4a39c8fc3b15d487b3f8d6ea716c7e8cd2859c9374b6c8c9b3e2f'; // Temporary hardcoded secret
+
 @Module({
   imports: [
     PassportModule.register({ defaultStrategy: 'jwt' }),
     JwtModule.register({
-      secret: process.env.JWT_SECRET,
+      secret: JWT_SECRET,
       signOptions: { expiresIn: '24h' },
       global: true,
     }),
