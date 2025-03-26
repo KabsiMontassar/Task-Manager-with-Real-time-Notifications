@@ -1,5 +1,5 @@
 import api from './api.service';
-import { API_ENDPOINTS } from '../config/api.config';
+import { API_ENDPOINTS } from '../config/api.config.ts';
 import { jwtDecode } from 'jwt-decode';
 
 interface LoginCredentials {

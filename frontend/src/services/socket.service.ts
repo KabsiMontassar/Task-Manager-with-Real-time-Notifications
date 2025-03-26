@@ -1,5 +1,5 @@
 import { io, Socket } from 'socket.io-client';
-import { WS_BASE_URL } from '../config/api.config';
+import { WS_BASE_URL } from '../config/api.config.ts';
 
 class SocketService {
   private socket: Socket | null = null;
