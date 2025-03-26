@@ -1,6 +1,6 @@
 import api from './api.service';
 import { API_ENDPOINTS } from '../config/api.config';
-import { Task, TaskStatus } from '../types/task';
+import { Task, TaskStatus, TaskDetails } from '../types/task';
 
 export const taskService = {
   getAllTasks: () => 
@@ -8,6 +8,9 @@ export const taskService = {
 
   getTaskById: (id: string) =>
     api.get<Task>(API_ENDPOINTS.TASKS.BY_ID(id)),
+
+  getTaskDetails: (id: string) =>
+    api.get<TaskDetails>(API_ENDPOINTS.TASKS.DETAILS(id)),
 
   createTask: (task: Partial<Task>) =>
     api.post<Task>(API_ENDPOINTS.TASKS.BASE, task),
