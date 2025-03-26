@@ -12,10 +12,15 @@ export class TaskService {
     private taskRepository: Repository<Task>,
   ) {}
 
+  private convertMongoIdToUuid(mongoId: string): string {
+    return uuidv4({ random: Buffer.from(mongoId.padEnd(32, '0').slice(0, 32), 'hex') });
+  }
+
   async create(createTaskDto: CreateTaskDto, userId: string): Promise<Task> {
     const task = this.taskRepository.create({
       ...createTaskDto,
-      createdBy: userId,
+      assignedTo: this.convertMongoIdToUuid(createTaskDto.assignedTo),
+      createdBy: this.convertMongoIdToUuid(userId),
     });
     return await this.taskRepository.save(task);
   }
