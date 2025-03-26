@@ -6,7 +6,8 @@ import { userService } from '../services/user.service';
 
 interface UserProfile {
   id: string;
-  name: string;
+  firstName: string;
+  lastName: string;
   email: string;
   role: string;
 }
@@ -38,13 +39,24 @@ const HomePage = () => {
     navigate('/login');
   };
 
-  const getInitials = (name: string) => {
+  const getInitials = (name?: string) => {
+    if (!name) return '';
     return name
       .split(' ')
       .map(part => part[0])
       .join('')
       .toUpperCase();
   };
+
+ 
+
+  const Capitalize = (str?: string) => {
+    if (!str) return '';
+    return str.charAt(0).toUpperCase() + str.slice(1);
+  }
+
+
+
 
   if (loading) {
     return <div className="loading">Loading...</div>;
@@ -53,8 +65,15 @@ const HomePage = () => {
   return (
     <div className="home-container">
       <div className="sidebar">
-        <div className="user-icon">
-          <span>{user ? getInitials(user.name) : ''}</span>
+        <div style={{ display: 'flex', alignItems: 'center' , padding: '10px', gap: '10px'}}>
+          <div className="user-icon">
+            <span>{getInitials(user?.firstName + ' ' + user?.lastName)}</span>
+          </div>
+          <div className="user-info">
+            <h3>{
+              Capitalize(user?.firstName) + ' ' + Capitalize(user?.lastName)
+            }</h3>
+          </div>
         </div>
         <button className="logout-button" onClick={handleLogout}>
           Logout

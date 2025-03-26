@@ -3,7 +3,8 @@ import { API_ENDPOINTS } from '../config/api.config';
 
 interface UserProfile {
   id: string;
-  name: string;
+  firstName: string;
+  lastName: string;
   email: string;
   role: string;
 }
