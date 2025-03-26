@@ -1,33 +1,46 @@
-import axios from 'axios';
-import { User, UserProfile } from '@/types';
-import { API_URL } from '@/config';
+import api from './api.service';
+import { API_ENDPOINTS } from '../config/api.config';
 
-class UserService {
-  async getAllUsers(): Promise<User[]> {
-    const response = await axios.get(`${API_URL}/users`);
-    return response.data;
-  }
-
-  async getProfile(): Promise<UserProfile> {
-    const response = await axios.get(`${API_URL}/users/profile`);
-    return response.data;
-  }
-
-  async updateProfile(data: Partial<UserProfile>): Promise<UserProfile> {
-    const response = await axios.patch(`${API_URL}/users/profile`, data);
-    return response.data;
-  }
-
-  async updateAvatar(file: File): Promise<UserProfile> {
-    const formData = new FormData();
-    formData.append('avatar', file);
-    const response = await axios.post(`${API_URL}/users/avatar`, formData, {
-      headers: {
-        'Content-Type': 'multipart/form-data',
-      },
-    });
-    return response.data;
-  }
+interface UserProfile {
+  id: string;
+  firstName: string;
+  lastName: string;
+  email: string;
+  role: string;
 }
 
-export const userService = new UserService();
+export const userService = {
+  getProfile: async (): Promise<UserProfile> => {
+    try {
+      console.log('Fetching user profile');
+      const response = await api.get(API_ENDPOINTS.USERS.ME);
+      console.log('Profile response:', response.data);
+      
+      // Update stored user data with latest from server
+      localStorage.setItem('user', JSON.stringify(response.data));
+      
+      return response.data;
+    } catch (error: any) {
+      console.error('Error fetching profile:', error.response?.data || error.message);
+      throw error;
+    }
+  },
+
+  updateProfile: async (data: Partial<UserProfile>): Promise<UserProfile> => {
+    try {
+      const user = localStorage.getItem('user');
+      if (!user) throw new Error('No user found');
+      
+      const { id } = JSON.parse(user);
+      const response = await api.put(API_ENDPOINTS.USERS.BY_ID(id), data);
+      
+      // Update stored user data
+      localStorage.setItem('user', JSON.stringify(response.data));
+      
+      return response.data;
+    } catch (error: any) {
+      console.error('Error updating profile:', error.response?.data || error.message);
+      throw error;
+    }
+  }
+};

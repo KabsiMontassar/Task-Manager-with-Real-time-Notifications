@@ -4,8 +4,8 @@ import { ExtractJwt, Strategy } from 'passport-jwt';
 import { Inject } from '@nestjs/common';
 import { ClientProxy } from '@nestjs/microservices';
 import { firstValueFrom } from 'rxjs';
-import * as dotenv from 'dotenv';
-dotenv.config();
+
+const JWT_SECRET = 'b09d24b7e1c4a39c8fc3b15d487b3f8d6ea716c7e8cd2859c9374b6c8c9b3e2f'; // Use the same secret as auth.module
 
 @Injectable()
 export class JwtStrategy extends PassportStrategy(Strategy) {
@@ -15,41 +15,27 @@ export class JwtStrategy extends PassportStrategy(Strategy) {
     super({
       jwtFromRequest: ExtractJwt.fromAuthHeaderAsBearerToken(),
       ignoreExpiration: false,
-      secretOrKey: process.env.JWT_SECRET || 'error',
+      secretOrKey: JWT_SECRET,
     });
   }
 
   async validate(payload: any) {
     try {
-      console.log('JWT Payload:', payload); // Debug log
+      console.log('JWT Payload:', payload);
       
       if (!payload || !payload.userId) {
-        console.log('Invalid payload structure'); // Debug log
+        console.log('Invalid payload structure');
         throw new UnauthorizedException('Invalid token payload');
       }
 
-      const user = await firstValueFrom(
-        this.userService.send({ cmd: 'get_user' }, { userId: payload.userId })
-      ).catch(err => {
-        console.log('User service error:', err); // Debug log
-        return null;
-      });
-
-      if (!user) {
-        console.log('User not found'); // Debug log
-        throw new UnauthorizedException('User not found');
-      }
-
-      const result = {
-        id: payload.userId,
+      // Don't validate against user service again since we already have the user info in the token
+      return {
+        userId: payload.userId,
         email: payload.email,
         role: payload.role
       };
-      
-      console.log('Validated user:', result); // Debug log
-      return result;
     } catch (error) {
-      console.log('JWT validation error:', error); // Debug log
+      console.log('JWT validation error:', error);
       throw new UnauthorizedException('Invalid token');
     }
   }

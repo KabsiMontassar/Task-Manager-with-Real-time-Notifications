@@ -7,47 +7,72 @@ interface LoginCredentials {
   password: string;
 }
 
-interface RegisterData extends LoginCredentials {
+interface RegisterData {
   name: string;
-  role?: 'ADMIN' | 'MANAGER' | 'EMPLOYEE';
+  email: string;
+  password: string;
+  role: 'ADMIN' | 'MANAGER' | 'EMPLOYEE';
+}
+
+interface User {
+  id: string;
+  name: string;
+  email: string;
+  role: string;
 }
 
 interface AuthResponse {
   access_token: string;
-  user: {
-    id: string;
-    email: string;
-    name: string;
-    role: string;
-  };
+  user: User;
 }
 
 export const authService = {
-  login: async (credentials: LoginCredentials) => {
-    const response = await api.post<AuthResponse>(API_ENDPOINTS.AUTH.LOGIN, credentials);
-    if (response.data.access_token) {
-      localStorage.setItem('token', response.data.access_token);
-      localStorage.setItem('user', JSON.stringify(response.data.user));
+  login: async (credentials: LoginCredentials): Promise<AuthResponse> => {
+    try {
+      console.log('Sending login request with:', credentials);
+      const response = await api.post<AuthResponse>(API_ENDPOINTS.AUTH.LOGIN, credentials);
+      console.log('Received login response:', response.data);
+
+      const { access_token, user } = response.data;
+      
+      if (!access_token || !user) {
+        console.error('Missing token or user in response:', response.data);
+        throw new Error('Invalid response from server');
+      }
+
+      localStorage.setItem('token', access_token);
+      localStorage.setItem('user', JSON.stringify(user));
+      
+      console.log('Stored token and user:', { access_token, user });
+      return response.data;
+    } catch (error) {
+      console.error('Login error in auth service:', error);
+      throw error;
     }
-    return response.data;
   },
 
-  register: async (data: RegisterData) => {
-    const response = await api.post<AuthResponse>(API_ENDPOINTS.AUTH.REGISTER, data);
-    if (response.data.access_token) {
-      localStorage.setItem('token', response.data.access_token);
-      localStorage.setItem('user', JSON.stringify(response.data.user));
+  register: async (data: RegisterData): Promise<AuthResponse> => {
+    try {
+      const response = await api.post<AuthResponse>(API_ENDPOINTS.AUTH.REGISTER, data);
+      const { access_token, user } = response.data;
+
+      if (access_token && user) {
+        localStorage.setItem('token', access_token);
+        localStorage.setItem('user', JSON.stringify(user));
+      }
+      return response.data;
+    } catch (error) {
+      console.error('Register error:', error);
+      throw error;
     }
-    return response.data;
   },
 
   logout: () => {
     localStorage.removeItem('token');
     localStorage.removeItem('user');
-    window.location.href = '/login';
   },
 
-  getCurrentUser: () => {
+  getCurrentUser: (): User | null => {
     const user = localStorage.getItem('user');
     return user ? JSON.parse(user) : null;
   },
@@ -57,10 +82,12 @@ export const authService = {
     if (!token) return false;
 
     try {
-      const decodedToken: any = jwtDecode(token);
-      return decodedToken.exp * 1000 > Date.now();
-    } catch {
+      const decoded = jwtDecode(token);
+      if (!decoded.exp) return false;
+      return decoded.exp * 1000 > Date.now();
+    } catch (error) {
+      console.error('Token validation error:', error);
       return false;
     }
-  },
+  }
 };

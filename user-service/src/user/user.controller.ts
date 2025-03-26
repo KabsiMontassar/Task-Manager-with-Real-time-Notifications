@@ -1,11 +1,27 @@
-import { Controller, Get, Put, Delete, Param, Body } from '@nestjs/common';
+import { Controller, Get, Put, Delete, Param, Body, UseGuards, Req } from '@nestjs/common';
 import { UserService } from './user.service';
 import { UpdateUserDto } from '../dto/user.dto';
 import { MessagePattern, Payload } from '@nestjs/microservices';
+import { JwtAuthGuard } from '../auth/jwt-auth.guard';
+import { Request } from 'express';
 
 @Controller('users')
 export class UserController {
     constructor(private readonly userService: UserService) {}
+
+    @Get('me')
+    @UseGuards(JwtAuthGuard)
+    async getProfile(@Req() req: Request) {
+        if (!req.user) {
+            throw new Error('User not found in request');
+        }
+        return this.userService.findById(req.user.userId);
+    }
+
+    @MessagePattern('user_find_by_id')
+    async findByIdMicroservice(@Payload() payload: { id: string }) {
+        return this.userService.findById(payload.id);
+    }
 
     @Get()
     async findAll() {
@@ -29,15 +45,18 @@ export class UserController {
     }
 
     @MessagePattern({ cmd: 'get_user' })
-    async getUser(@Payload() data: { userId: string }) {
-        try {
-            console.log('Received get_user request with data:', data); // Debug log
-            const user = await this.userService.findById(data.userId);
-            console.log('Found user:', user); // Debug log
-            return user;
-        } catch (error) {
-            console.error('Error in getUser:', error); // Debug log
-            return null;
-        }
+    async getUserByIdCmd(@Payload() payload: { userId: string }) {
+        console.log('Received get_user command with payload:', payload);
+        const user = await this.userService.findById(payload.userId);
+        console.log('Found user:', user);
+        return user;
+    }
+
+    @MessagePattern('user_get_profile')
+    async getProfileMicroservice(@Payload() payload: { userId: string }) {
+        console.log('Received user_get_profile request with payload:', payload);
+        const user = await this.userService.findById(payload.userId);
+        console.log('Found user:', user);
+        return user;
     }
 }
