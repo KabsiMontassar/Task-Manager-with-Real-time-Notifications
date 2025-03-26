@@ -1,39 +1,78 @@
-# Task Management System with Real-time Notifications
+Task Management System with Real-time Notifications
+This is a task management system built using microservices architecture, with real-time notifications and drag-n-drop task management features.
 
-A modern task management system built with microservices architecture, featuring real-time notifications and drag-n-drop task management.
-
-## Project Structure
-
-```
+Project Structure
+bash
+Copy
+Edit
 TaskManagment/
-├── frontend/               # React TypeScript frontend with Vite
+├── frontend/               # React frontend
 ├── api-gateway/           # API Gateway service
-├── user-service/         # User authentication and management
-├── task-service/        # Task and project management
-└── notification-service/ # Real-time notifications
-```
+├── user-service/          # User management & authentication
+├── task-service/          # Task and project management
+└── notification-service/  # Real-time notifications
+Tech Stack
+Frontend
+React (TypeScript)
 
-## Tech Stack
+Vite for fast development
 
-### Frontend
-- React (TypeScript) with Vite
-- ShadCN UI
-- React Query
-- React Hook Form + Yup
-- Socket.io-client
-- DND Kit for drag-n-drop
+ShadCN UI for design
 
-### Backend
-- NestJS microservices
-- MongoDB (User & Notification services)
-- PostgreSQL (Task service)
-- JWT Authentication
-- Socket.io for real-time features
+Socket.io-client for real-time updates
 
-## Setup Instructions
+DND Kit for drag-n-drop functionality
 
-1. Install dependencies for each service:
-```bash
+Backend
+NestJS for microservices
+
+MongoDB for User & Notification services
+
+PostgreSQL for Task service
+
+JWT for authentication
+
+Socket.io for real-time features
+
+Backend Architecture
+Microservices
+API Gateway
+
+Central entry for requests
+
+Handles authentication, routing, and WebSocket connections
+
+User Service
+
+Manages user profiles, JWT authentication, and roles (Admin, Manager, Employee)
+
+Task Service
+
+Manages tasks, projects, task assignments, comments, and attachments
+
+Notification Service
+
+Sends real-time notifications to users via WebSockets
+
+Features
+User Authentication: JWT-based login
+
+Role-Based Access: Admin, Manager, and Employee roles
+
+Real-time Task Updates: Tasks update in real-time
+
+Drag-n-drop Task Management: Easily move tasks around
+
+Task Comments & Attachments: Add comments and files to tasks
+
+Notifications: Real-time notifications for task updates
+
+Setup
+Install Dependencies:
+
+bash
+Copy
+Edit
 # Frontend
 cd frontend
 npm install
@@ -58,19 +97,11 @@ npm run start:dev
 cd notification-service
 npm install
 npm run start:dev
-```
+Set up Databases:
 
-2. Set up databases:
-- MongoDB for user-service and notification-service
-- PostgreSQL for task-service
+MongoDB for User and Notification services
 
-3. Configure environment variables (create .env files in each service)
+PostgreSQL for Task service
 
-## Features
-
-- User authentication (JWT)
-- Role-based access control (Admin, Manager, Employee)
-- Real-time task updates
-- Drag-n-drop task management
-- Task comments and attachments
-- Real-time notifications
+Configure Environment Variables:
+Create .env files for each service.
