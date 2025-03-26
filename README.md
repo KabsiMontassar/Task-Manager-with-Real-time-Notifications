@@ -5,7 +5,7 @@ A task management system built with microservices, featuring real-time notificat
 ## Project Structure
 
 TaskManagment/
-├── frontend/               # React TypeScript frontend with Vite
+├── frontend/               # React TypeScript frontend with Vite 
 ├── api-gateway/           # API Gateway service
 ├── user-service/         # User authentication and management
 ├── task-service/        # Task and project management
