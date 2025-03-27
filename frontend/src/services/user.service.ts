@@ -40,8 +40,8 @@ export const userService = {
       const user = localStorage.getItem('user');
       if (!user) throw new Error('No user found');
       
-      const { id } = JSON.parse(user);
-      await api.put(API_ENDPOINTS.USERS.PASSWORD(id), {
+      const { _id } = JSON.parse(user);
+      await api.put(API_ENDPOINTS.USERS.PASSWORD(_id), {
         currentPassword,
         newPassword
       });

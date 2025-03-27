@@ -29,4 +29,18 @@ export class UserController {
   async update(@Param('id') id: string, @Body() updateUserDto: any) {
     return this.userService.update(id, updateUserDto);
   }
+
+ 
+
+  @Put(':id/password')
+  @UseGuards(JwtAuthGuard)
+  async updatePassword(@Param('id') id: string, @Body() updatePasswordDto: any) {
+    try {
+      const result = await this.userService.updatePassword(id, updatePasswordDto);
+      return result;
+    } catch (error) {
+      console.error('Error updating password:', error);
+      throw new Error('Failed to update password');
+    }
+  }
 }

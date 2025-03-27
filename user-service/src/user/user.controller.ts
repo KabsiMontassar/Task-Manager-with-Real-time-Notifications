@@ -67,4 +67,12 @@ export class UserController {
         console.log('Updated user:', user);
         return user;
     }
+
+    @MessagePattern('user_update_password')
+    async updatePasswordMicroservice(@Payload() payload: { id: string; data: any }) {
+        console.log('Received user_update_password request with payload:', payload);
+        const result = await this.userService.updatePassword(payload.id, payload.data);
+        console.log('Updated password for user:', payload.id);
+        return result;
+    }
 }

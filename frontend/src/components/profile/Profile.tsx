@@ -61,7 +61,7 @@ export const Profile: React.FC<ProfileProps> = ({ user }) => {
   };
 
   return (
-    <Box  h="70vh" mx="auto" p={6} pt={2}>
+    <Box h="70vh" mx="auto" p={6} pt={2}>
 
 
       <Flex ml={40} justifyContent="space-between" mb={10}>
@@ -84,65 +84,80 @@ export const Profile: React.FC<ProfileProps> = ({ user }) => {
 
       {isEditing ? (
         <VStack as="form" spacing={4} onSubmit={handleSubmit} align="stretch">
-          <FormControl>
+          <FormControl color={"white"}>
             <FormLabel>First Name</FormLabel>
             <Input
+              borderColor={"teal"}
               type="text"
+               variant='flushed'
               value={formData.firstName}
               onChange={(e) => setFormData({ ...formData, firstName: e.target.value })}
             />
           </FormControl>
 
-          <FormControl>
+          <FormControl color={"white"}>
             <FormLabel>Last Name</FormLabel>
             <Input
+              borderColor={"teal"}
+               variant='flushed'
+              bg={"transparent"}
               type="text"
               value={formData.lastName}
               onChange={(e) => setFormData({ ...formData, lastName: e.target.value })}
             />
           </FormControl>
 
-          <FormControl>
+          <FormControl color={"white"}>
             <FormLabel>Email</FormLabel>
             <Input
+              borderColor={"teal"}
               type="email"
+               variant='flushed'
               value={formData.email}
               onChange={(e) => setFormData({ ...formData, email: e.target.value })}
             />
           </FormControl>
 
-          <Divider />
+          <Divider  />
 
-          <Heading size="md">Change Password</Heading>
+          <Heading color={"white"} size="md">Change Password</Heading>
 
-          <FormControl>
+          <FormControl color={"white"}>
             <FormLabel>Current Password</FormLabel>
             <Input
+               bg={"transparent"}
+               _autofill={{ bg: "transparent" }}
+              borderColor={"teal"}
               type="password"
+               variant='flushed'
               value={formData.currentPassword}
               onChange={(e) => setFormData({ ...formData, currentPassword: e.target.value })}
             />
           </FormControl>
 
-          <FormControl>
+          <FormControl color={"white"}>
             <FormLabel>New Password</FormLabel>
             <Input
+              borderColor={"teal"}
               type="password"
+               variant='flushed'
               value={formData.newPassword}
               onChange={(e) => setFormData({ ...formData, newPassword: e.target.value })}
             />
           </FormControl>
 
-          <FormControl>
+          <FormControl color={"white"}>
             <FormLabel>Confirm New Password</FormLabel>
             <Input
+              borderColor={"teal"}
               type="password"
+               variant='flushed'
               value={formData.confirmPassword}
               onChange={(e) => setFormData({ ...formData, confirmPassword: e.target.value })}
             />
           </FormControl>
 
-          <Button type="submit" colorScheme="blue" alignSelf="flex-end">
+          <Button type="submit" colorScheme="teal" alignSelf="flex-end">
             Save Changes
           </Button>
         </VStack>
