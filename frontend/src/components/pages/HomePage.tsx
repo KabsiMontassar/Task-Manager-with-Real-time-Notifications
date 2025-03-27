@@ -63,9 +63,9 @@ const HomePage = () => {
   
 
   return (
-    <Flex bg={themes[theme]?.dark || '#333339'} w="100vw" h="100vh">
+    <Flex bg={themes[theme]?.light || '#333339'} w="100vw" h="100vh">
       {user && (
-        <Flex w={250} p={25} flexDirection={"column"} bg="#28282D" position="relative">
+        <Flex w={250} p={25} flexDirection={"column"} bg={themes[theme]?.dark || '#333339'} position="relative">
           <Flex mb={4} gap={2} alignItems="center">
             <Button w={"lg"} _hover={{ bg: 'teal.400', color: "white" }}
               onClick={onOpen} colorScheme='teal' variant='outline'>

@@ -1,58 +1,68 @@
-import { useState } from 'react';
-import { useNavigate, Link } from 'react-router-dom';
-import { authService } from '../../services/auth.service';
-import './Auth.css';
+import { useState } from "react";
+import { useNavigate, Link } from "react-router-dom";
+import { authService } from "../../services/auth.service";
+import {
+  Box,
+  Button,
+  FormControl,
+  FormLabel,
+  Input,
+  VStack,
+  Alert,
+  AlertIcon,
+  Text,
+  useToast,
+  Flex,
+  Heading,
+  useColorModeValue,
+} from "@chakra-ui/react";
 
 const Login = () => {
   const navigate = useNavigate();
-  const [formData, setFormData] = useState({
-    email: '',
-    password: '',
-  });
-  const [error, setError] = useState('');
+  const toast = useToast();
+  const [formData, setFormData] = useState({ email: "", password: "" });
   const [loading, setLoading] = useState(false);
+  const [error, setError] = useState("");
 
   const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const { name, value } = e.target;
-    setFormData(prev => ({
+    setFormData((prev) => ({
       ...prev,
-      [name]: value
+      [name]: value,
     }));
   };
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    setError('');
+    setError("");
     setLoading(true);
 
     try {
       const response = await authService.login(formData);
 
-      // Verify that we have the necessary data
       if (!response.access_token || !response.user) {
-        throw new Error('Invalid response from server');
+        throw new Error("Invalid response from server");
       }
 
-      // Double check storage
-      const storedToken = localStorage.getItem('token');
-      const storedUser = localStorage.getItem('user');
-
-      if (!storedToken || !storedUser) {
-        throw new Error('Failed to store authentication data');
-      }
-
-      // Verify authentication
       if (!authService.isAuthenticated()) {
-        throw new Error('Authentication verification failed');
+        throw new Error("Authentication verification failed");
       }
 
-      navigate('/');
+      toast({
+        title: "Login successful!",
+        description: "Welcome back!",
+        status: "success",
+        duration: 3000,
+        isClosable: true,
+      });
+
+      navigate("/");
     } catch (err: any) {
-      console.error('Login error:', err);
+      console.error("Login error:", err);
       setError(
-        err.response?.data?.message || 
-        err.message || 
-        'Failed to login. Please check your credentials.'
+        err.response?.data?.message ||
+          err.message ||
+          "Failed to login. Please check your credentials."
       );
     } finally {
       setLoading(false);
@@ -60,42 +70,75 @@ const Login = () => {
   };
 
   return (
-    <div className="auth-container">
-      <div className="auth-box">
-        <h2>Login</h2>
-        {error && <div className="error-message">{error}</div>}
+    <Flex
+      align="center"
+      justify="center"
+      minH="100vh"
+      bg={useColorModeValue("gray.50", "gray.800")}
+    >
+      <Box
+        bg={useColorModeValue("white", "gray.700")}
+        p={8}
+        borderRadius="md"
+        boxShadow="lg"
+        w="100%"
+        maxW="400px"
+      >
+        <Heading mb={6} textAlign="center" size="lg">
+          Login
+        </Heading>
+
+        {error && (
+          <Alert status="error" mb={4}>
+            <AlertIcon />
+            {error}
+          </Alert>
+        )}
+
         <form onSubmit={handleSubmit}>
-          <div className="form-group">
-            <label htmlFor="email">Email</label>
-            <input
-              type="email"
-              id="email"
-              name="email"
-              value={formData.email}
-              onChange={handleChange}
-              required
-            />
-          </div>
-          <div className="form-group">
-            <label htmlFor="password">Password</label>
-            <input
-              type="password"
-              id="password"
-              name="password"
-              value={formData.password}
-              onChange={handleChange}
-              required
-            />
-          </div>
-          <button type="submit" className="submit-button" disabled={loading}>
-            {loading ? 'Logging in...' : 'Login'}
-          </button>
+          <VStack spacing={4}>
+            <FormControl isRequired>
+              <FormLabel>Email</FormLabel>
+              <Input
+                type="email"
+                name="email"
+                value={formData.email}
+                onChange={handleChange}
+                placeholder="Enter your email"
+              />
+            </FormControl>
+
+            <FormControl isRequired>
+              <FormLabel>Password</FormLabel>
+              <Input
+                type="password"
+                name="password"
+                value={formData.password}
+                onChange={handleChange}
+                placeholder="Enter your password"
+              />
+            </FormControl>
+
+            <Button
+              type="submit"
+              colorScheme="teal"
+              width="full"
+              isLoading={loading}
+              loadingText="Logging in..."
+            >
+              Login
+            </Button>
+
+            <Text fontSize="sm">
+              Don't have an account?{" "}
+              <Link to="/register" style={{ color: "#319795" }}>
+                Register
+              </Link>
+            </Text>
+          </VStack>
         </form>
-        <p className="auth-link">
-          Don't have an account? <Link to="/register">Register</Link>
-        </p>
-      </div>
-    </div>
+      </Box>
+    </Flex>
   );
 };
 
