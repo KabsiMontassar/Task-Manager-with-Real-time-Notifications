@@ -1,15 +1,25 @@
-import React, { useEffect } from "react";
+import React, { useEffect, useRef } from "react";
 import "./particles.css";
 
 const Particles: React.FC = () => {
+  const canvasRef = useRef<HTMLCanvasElement | null>(null);
+
   useEffect(() => {
-    const canvas = document.getElementById("particleCanvas") as HTMLCanvasElement; // Type canvas as HTMLCanvasElement
+    const canvas = canvasRef.current;
+    if (!canvas) return;
     const ctx = canvas.getContext("2d");
+    if (!ctx) return;
 
-    if (!canvas || !ctx) return; // Ensure canvas and ctx are available
+    const parent = canvas.parentElement;
+    if (!parent) return;
 
-    canvas.width = window.innerWidth;
-    canvas.height = window.innerHeight;
+    
+    const setCanvasSize = () => {
+      canvas.width = parent.clientWidth; 
+      canvas.height = parent.clientHeight 
+    };
+
+    setCanvasSize();
 
     const particles: Particle[] = [];
     const numParticles = 100;
@@ -24,8 +34,9 @@ const Particles: React.FC = () => {
       vy: number;
 
       constructor() {
-        this.x = Math.random() * canvas.width;
-        this.y = Math.random() * canvas.height;
+        
+        this.x = Math.random() * canvas!.width;
+        this.y = Math.random() * canvas!.height;
         this.radius = Math.random() * 5 + 2;
         this.color = colors[Math.floor(Math.random() * colors.length)];
         this.vx = (Math.random() - 0.5) * 2;
@@ -33,6 +44,7 @@ const Particles: React.FC = () => {
       }
 
       move() {
+        if (!canvas) return;
         this.x += this.vx;
         this.y += this.vy;
         if (this.x <= 0 || this.x >= canvas.width) this.vx *= -1;
@@ -40,7 +52,7 @@ const Particles: React.FC = () => {
       }
 
       draw() {
-         if(!ctx) return;
+        if (!ctx) return;
         ctx.beginPath();
         ctx.arc(this.x, this.y, this.radius, 0, Math.PI * 2);
         ctx.fillStyle = this.color;
@@ -49,6 +61,7 @@ const Particles: React.FC = () => {
     }
 
     function initParticles() {
+      particles.length = 0; // Clear previous particles
       for (let i = 0; i < numParticles; i++) {
         particles.push(new Particle());
       }
@@ -65,8 +78,7 @@ const Particles: React.FC = () => {
     function drawLines() {
       particles.forEach(p => {
         const closest = getClosest(p);
-        if (!closest) return;
-        if(!ctx) return;
+        if (!closest || !ctx) return;
         ctx.beginPath();
         ctx.moveTo(p.x, p.y);
         ctx.lineTo(closest.x, closest.y);
@@ -81,24 +93,24 @@ const Particles: React.FC = () => {
       });
     }
 
+    let animationFrameId: number;
     function animate() {
-        if(!ctx) return;
+      if (!ctx || !canvas) return;
       ctx.clearRect(0, 0, canvas.width, canvas.height);
       drawLines();
       particles.forEach(p => {
         p.move();
         p.draw();
       });
-      requestAnimationFrame(animate);
+      animationFrameId = requestAnimationFrame(animate);
     }
 
     initParticles();
     animate();
 
+    // Handle resize
     const handleResize = () => {
-      canvas.width = window.innerWidth;
-      canvas.height = window.innerHeight;
-      particles.length = 0;
+      setCanvasSize();
       initParticles();
     };
 
@@ -106,10 +118,11 @@ const Particles: React.FC = () => {
 
     return () => {
       window.removeEventListener("resize", handleResize);
+      cancelAnimationFrame(animationFrameId);
     };
   }, []);
 
-  return <canvas id="particleCanvas"></canvas>;
+  return <canvas className="particles" ref={canvasRef}></canvas>;
 };
 
 export default Particles;

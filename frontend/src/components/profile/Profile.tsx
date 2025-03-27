@@ -20,9 +20,12 @@ import { EditIcon, CloseIcon } from '@chakra-ui/icons';
 
 interface ProfileProps {
   user: User;
+  dark: string;
+  light: string;
+  fontColor: string;
 }
 
-export const Profile: React.FC<ProfileProps> = ({ user }) => {
+export const Profile: React.FC<ProfileProps> = ({ user,dark,light,fontColor }) => {
   const [isEditing, setIsEditing] = useState(false);
   const [formData, setFormData] = useState({
     firstName: user.firstName || '',
@@ -84,7 +87,7 @@ export const Profile: React.FC<ProfileProps> = ({ user }) => {
 
       {isEditing ? (
         <VStack as="form" spacing={4} onSubmit={handleSubmit} align="stretch">
-          <FormControl color={"white"}>
+          <FormControl color={fontColor}>
             <FormLabel>First Name</FormLabel>
             <Input
               borderColor={"teal"}
@@ -95,7 +98,7 @@ export const Profile: React.FC<ProfileProps> = ({ user }) => {
             />
           </FormControl>
 
-          <FormControl color={"white"}>
+          <FormControl color={fontColor}>
             <FormLabel>Last Name</FormLabel>
             <Input
               borderColor={"teal"}
@@ -107,7 +110,7 @@ export const Profile: React.FC<ProfileProps> = ({ user }) => {
             />
           </FormControl>
 
-          <FormControl color={"white"}>
+          <FormControl color={fontColor}>
             <FormLabel>Email</FormLabel>
             <Input
               borderColor={"teal"}
@@ -120,9 +123,9 @@ export const Profile: React.FC<ProfileProps> = ({ user }) => {
 
           <Divider  />
 
-          <Heading color={"white"} size="md">Change Password</Heading>
+          <Heading color={fontColor} size="md">Change Password</Heading>
 
-          <FormControl color={"white"}>
+          <FormControl color={fontColor}>
             <FormLabel>Current Password</FormLabel>
             <Input
                bg={"transparent"}
@@ -135,7 +138,7 @@ export const Profile: React.FC<ProfileProps> = ({ user }) => {
             />
           </FormControl>
 
-          <FormControl color={"white"}>
+          <FormControl color={fontColor}>
             <FormLabel>New Password</FormLabel>
             <Input
               borderColor={"teal"}
@@ -146,7 +149,7 @@ export const Profile: React.FC<ProfileProps> = ({ user }) => {
             />
           </FormControl>
 
-          <FormControl color={"white"}>
+          <FormControl color={fontColor}>
             <FormLabel>Confirm New Password</FormLabel>
             <Input
               borderColor={"teal"}
@@ -166,17 +169,17 @@ export const Profile: React.FC<ProfileProps> = ({ user }) => {
 
           <Box>
             <Text fontSize="sm" color="gray.500">First Name</Text>
-            <Text color="white" fontSize="lg">{user.firstName}</Text>
+            <Text  color={fontColor} fontSize="lg">{user.firstName}</Text>
           </Box>
           <Box>
             <Text fontSize="sm" color="gray.500">Last Name</Text>
-            <Text color="white" fontSize="lg">{user.lastName}</Text>
+            <Text  color={fontColor} fontSize="lg">{user.lastName}</Text>
           </Box>
 
 
           <Box>
             <Text fontSize="sm" color="gray.500">Email</Text>
-            <Text color="white" fontSize="lg">{user.email}</Text>
+            <Text  color={fontColor} fontSize="lg">{user.email}</Text>
           </Box>
 
 

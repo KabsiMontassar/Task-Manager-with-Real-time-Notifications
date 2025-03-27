@@ -9,6 +9,7 @@
     background: linear-gradient(to right, #1a1a2e, #16213e, #0f3460); 
   }
   
-  canvas { 
+  .particles { 
     display: block; 
+    overflow:hidden;
   }
