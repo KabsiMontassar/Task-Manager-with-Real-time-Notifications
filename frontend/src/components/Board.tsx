@@ -6,7 +6,7 @@ const Board = () => {
       <Heading mb={10} fontSize="1.5rem" color={"#FCFCFC"}>TaskManagement</Heading>
       
       <Grid templateColumns='repeat(3, 1fr)' gap={6}>
-        <GridItem w='100%' h='70vh' bg='#37373E' p={3} borderRadius={5} border={"1px solid #424249"}>
+        <GridItem  w='100%' h='70vh' bg='#37373E' p={3} borderRadius={5} border={"1px solid #424249"}>
           <Heading mb={3} fontSize="1.2rem" textAlign={"center"} color={"#C68EFD"}>Todos</Heading>
           <Flex direction="column" gap={5}  h="100%">
             <Task />
