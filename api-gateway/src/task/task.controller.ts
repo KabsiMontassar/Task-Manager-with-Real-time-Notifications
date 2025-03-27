@@ -9,55 +9,68 @@ import {
   UseGuards,
   Request,
 } from '@nestjs/common';
-import { TaskService } from './task.service';
+import { ClientProxy } from '@nestjs/microservices';
+import { Inject } from '@nestjs/common';
 import { JwtAuthGuard } from '../auth/jwt-auth.guard';
 
 @Controller('tasks')
 @UseGuards(JwtAuthGuard)
 export class TaskController {
-  constructor(private readonly taskService: TaskService) {}
+  constructor(@Inject('TASK_SERVICE') private readonly taskClient: ClientProxy) {}
 
   @Post()
-  create(@Body() createTaskDto: any, @Request() req) {
-   
-    return this.taskService.create(createTaskDto, req.user.id);
+  async create(@Body() createTaskDto, @Request() req) {
+    return this.taskClient.send({ cmd: 'createTask' }, { createTaskDto, userId: req.user.id });
   }
 
   @Get()
-  findAll() {
-    return this.taskService.findAll();
+  async findAll() {
+    return this.taskClient.send({ cmd: 'findAllTasks' }, {});
   }
 
   @Get(':id')
-  findOne(@Param('id') id: string) {
-    return this.taskService.findOne(id);
+  async findOne(@Param('id') id: string) {
+    return this.taskClient.send({ cmd: 'findOneTask' }, id);
   }
 
   @Put(':id')
-  update(@Param('id') id: string, @Body() updateTaskDto: any) {
-    return this.taskService.update(id, updateTaskDto);
+  async update(@Param('id') id: string, @Body() updateTaskDto) {
+    return this.taskClient.send({ cmd: 'updateTask' }, { id, updateTaskDto });
   }
 
   @Delete(':id')
-  remove(@Param('id') id: string) {
-    return this.taskService.remove(id);
+  async remove(@Param('id') id: string) {
+    return this.taskClient.send({ cmd: 'removeTask' }, id);
   }
 
   @Post(':id/comments')
-  addComment(
+  async addComment(
     @Param('id') id: string,
-    @Body() commentDto: any,
+    @Body() commentDto,
     @Request() req,
   ) {
-    return this.taskService.addComment(id, commentDto, req.user.id);
+    return this.taskClient.send(
+      { cmd: 'addComment' },
+      { id, userId: req.user.id, commentDto }
+    );
   }
 
   @Put(':id/status')
-  updateStatus(
+  async updateStatus(
     @Param('id') id: string,
     @Body('status') status: string,
     @Request() req,
   ) {
-    return this.taskService.updateTaskStatus(id, status, req.user.id);
+    return this.taskClient.send({ cmd: 'updateTaskStatus' }, { id, status, userId: req.user.id });
+  }
+
+  @Put(':id/order')
+  async updateTaskOrder(@Param('id') id: string, @Body('order') newOrder: number) {
+    return this.taskClient.send({ cmd: 'updateTaskOrder' }, { id, newOrder });
+  }
+
+  @Get('/assignee/:userId')
+  async getTasksByAssignee(@Param('userId') userId: string) {
+    return this.taskClient.send({ cmd: 'getTasksByAssignee' }, userId);
   }
 }
