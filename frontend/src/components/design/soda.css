@@ -1,0 +1,16 @@
+* {
+    margin: 0;
+    padding: 0;
+    box-sizing: border-box;
+}
+
+body {
+    overflow: hidden;
+    background: linear-gradient(to bottom, #0d1117, #1e90ff);
+    margin: 0;
+    font-family: Arial, sans-serif;
+}
+
+canvas {
+    display: block;
+}

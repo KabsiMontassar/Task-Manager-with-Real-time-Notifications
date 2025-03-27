@@ -59,4 +59,12 @@ export class UserController {
         console.log('Found user:', user);
         return user;
     }
+
+    @MessagePattern('user_update')
+    async updateUserMicroservice(@Payload() payload: { id: string; data: UpdateUserDto }) {
+        console.log('Received user_update request with payload:', payload);
+        const user = await this.userService.update(payload.id, payload.data);
+        console.log('Updated user:', user);
+        return user;
+    }
 }

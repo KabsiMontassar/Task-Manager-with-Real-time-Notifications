@@ -26,9 +26,7 @@ const Login = () => {
     setLoading(true);
 
     try {
-      console.log('Submitting login form with:', formData);
       const response = await authService.login(formData);
-      console.log('Login successful:', response);
 
       // Verify that we have the necessary data
       if (!response.access_token || !response.user) {
@@ -48,7 +46,6 @@ const Login = () => {
         throw new Error('Authentication verification failed');
       }
 
-      console.log('All checks passed, redirecting to home');
       navigate('/');
     } catch (err: any) {
       console.error('Login error:', err);

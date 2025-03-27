@@ -30,4 +30,8 @@ export class UserService {
   async getProfile(userId: string) {
     return firstValueFrom(this.userServiceClient.send('user_get_profile', { userId }));
   }
+
+  async update(id: string, data: any) {
+    return firstValueFrom(this.userServiceClient.send('user_update', { id, data }));
+  }
 }

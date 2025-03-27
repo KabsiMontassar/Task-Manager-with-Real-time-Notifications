@@ -10,6 +10,7 @@ export const API_ENDPOINTS = {
     BASE: '/users',
     BY_ID: (id: string) => `/users/${id}`,
     ME: '/users/me',
+    PASSWORD: (id: string) => `/users/${id}/password`,
   },
   TASKS: {
     BASE: '/tasks',
