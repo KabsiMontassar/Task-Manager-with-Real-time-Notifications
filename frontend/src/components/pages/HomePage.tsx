@@ -1,9 +1,11 @@
-import './HomePage.css';
 import { useNavigate } from 'react-router-dom';
 import { authService } from '../../services/auth.service';
 import { useEffect, useState } from 'react';
 import { userService } from '../../services/user.service';
 import Sidebar from '../Sidebar';
+import Board from '../Board';
+import { Flex,Box } from '@chakra-ui/react'
+
 
 interface UserProfile {
   id: string;
@@ -40,13 +42,14 @@ const HomePage = () => {
     return <div className="loading">Loading...</div>;
   }
 
+
   return (
-    <div className="home-container">
+    <Flex  bg="#333339" w="100vw"  h="100vh">
       {user && <Sidebar user={user} />}
-      <div className="main-content">
-        <h1>TaskManagement</h1>
-      </div>
-    </div>
+      <Box flex={1} p={20} overflowY={"auto"} >
+        <Board />
+      </Box>
+    </Flex>
   );
 };
 

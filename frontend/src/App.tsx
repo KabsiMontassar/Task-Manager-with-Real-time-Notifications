@@ -4,7 +4,7 @@ import HomePage from './components/pages/HomePage';
 import Login from './components/auth/Login';
 import Register from './components/auth/Register';
 import ProtectedRoute from './components/auth/ProtectedRoute';
-
+import './App.css';
 const queryClient = new QueryClient({
   defaultOptions: {
     queries: {
