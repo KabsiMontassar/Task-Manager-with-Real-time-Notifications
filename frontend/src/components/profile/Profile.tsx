@@ -20,12 +20,10 @@ import { EditIcon, CloseIcon } from '@chakra-ui/icons';
 
 interface ProfileProps {
   user: User;
-  dark: string;
-  light: string;
-  fontColor: string;
+  onSave: (updatedUser: User) => void;
 }
 
-export const Profile: React.FC<ProfileProps> = ({ user,fontColor }) => {
+export const Profile: React.FC<ProfileProps> = ({ user, onSave }) => {
   const [isEditing, setIsEditing] = useState(false);
   const [formData, setFormData] = useState({
     firstName: user.firstName || '',
@@ -49,7 +47,7 @@ export const Profile: React.FC<ProfileProps> = ({ user,fontColor }) => {
         await userService.updatePassword(formData.currentPassword, formData.newPassword);
       }
 
-      await userService.updateProfile({
+      const updatedUser = await userService.updateProfile({
         firstName: formData.firstName,
         lastName: formData.lastName,
         email: formData.email,
@@ -57,6 +55,7 @@ export const Profile: React.FC<ProfileProps> = ({ user,fontColor }) => {
 
       setIsEditing(false);
       toast({ title: 'Profile updated successfully!', status: 'success', duration: 3000, isClosable: true });
+      onSave(updatedUser); // Pass the updated user directly
     } catch (error) {
       console.error('Error updating profile:', error);
       toast({ title: 'Failed to update profile', status: 'error', duration: 3000, isClosable: true });
@@ -87,7 +86,7 @@ export const Profile: React.FC<ProfileProps> = ({ user,fontColor }) => {
 
       {isEditing ? (
         <VStack as="form" spacing={4} onSubmit={handleSubmit} align="stretch">
-          <FormControl color={fontColor}>
+          <FormControl color="var(--font-color)" >
             <FormLabel>First Name</FormLabel>
             <Input
               borderColor={"teal"}
@@ -98,7 +97,7 @@ export const Profile: React.FC<ProfileProps> = ({ user,fontColor }) => {
             />
           </FormControl>
 
-          <FormControl color={fontColor}>
+          <FormControl color="var(--font-color)" >
             <FormLabel>Last Name</FormLabel>
             <Input
               borderColor={"teal"}
@@ -110,7 +109,7 @@ export const Profile: React.FC<ProfileProps> = ({ user,fontColor }) => {
             />
           </FormControl>
 
-          <FormControl color={fontColor}>
+          <FormControl color="var(--font-color)" >
             <FormLabel>Email</FormLabel>
             <Input
               borderColor={"teal"}
@@ -123,9 +122,9 @@ export const Profile: React.FC<ProfileProps> = ({ user,fontColor }) => {
 
           <Divider  />
 
-          <Heading color={fontColor} size="md">Change Password</Heading>
+          <Heading color="var(--font-color)"  size="md">Change Password</Heading>
 
-          <FormControl color={fontColor}>
+          <FormControl color="var(--font-color)" >
             <FormLabel>Current Password</FormLabel>
             <Input
                bg={"transparent"}
@@ -138,7 +137,7 @@ export const Profile: React.FC<ProfileProps> = ({ user,fontColor }) => {
             />
           </FormControl>
 
-          <FormControl color={fontColor}>
+          <FormControl color="var(--font-color)" >
             <FormLabel>New Password</FormLabel>
             <Input
               borderColor={"teal"}
@@ -149,7 +148,7 @@ export const Profile: React.FC<ProfileProps> = ({ user,fontColor }) => {
             />
           </FormControl>
 
-          <FormControl color={fontColor}>
+          <FormControl color="var(--font-color)" >
             <FormLabel>Confirm New Password</FormLabel>
             <Input
               borderColor={"teal"}
@@ -169,17 +168,17 @@ export const Profile: React.FC<ProfileProps> = ({ user,fontColor }) => {
 
           <Box>
             <Text fontSize="sm" color="gray.500">First Name</Text>
-            <Text  color={fontColor} fontSize="lg">{user.firstName}</Text>
+            <Text  color="var(--font-color)"  fontSize="lg">{user.firstName}</Text>
           </Box>
           <Box>
             <Text fontSize="sm" color="gray.500">Last Name</Text>
-            <Text  color={fontColor} fontSize="lg">{user.lastName}</Text>
+            <Text  color="var(--font-color)"  fontSize="lg">{user.lastName}</Text>
           </Box>
 
 
           <Box>
             <Text fontSize="sm" color="gray.500">Email</Text>
-            <Text  color={fontColor} fontSize="lg">{user.email}</Text>
+            <Text  color="var(--font-color)"  fontSize="lg">{user.email}</Text>
           </Box>
 
 

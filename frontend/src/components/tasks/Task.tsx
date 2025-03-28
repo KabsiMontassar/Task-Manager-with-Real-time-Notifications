@@ -22,12 +22,9 @@ interface TaskProps {
   task: TaskType;
   onEdit: (task: TaskType) => void;
   onDelete: (id: string) => void;
-  dark: string;
-  light: string;
-  fontColor: string;
 }
 
-const Task: React.FC<TaskProps> = ({ task, light, fontColor }) => {
+const Task: React.FC<TaskProps> = ({ task }) => {
   const {
     attributes,
     listeners,
@@ -61,7 +58,7 @@ const Task: React.FC<TaskProps> = ({ task, light, fontColor }) => {
       role="group"
     >
       <Card
-        bg={light}
+        bg="var(--light-color)"
         boxShadow="sm"
         _hover={{ boxShadow: "md", transform: "translateY(-2px)" }}
         transition="all 0.2s"
@@ -73,7 +70,7 @@ const Task: React.FC<TaskProps> = ({ task, light, fontColor }) => {
           <VStack align="stretch" spacing={2}>
             <Flex justify="space-between" align="center">
               <Tooltip label={task.title} placement="top-start">
-                <Text color={fontColor} fontWeight="medium" noOfLines={1}>{task.title}</Text>
+                <Text color="var(--font-color)" fontWeight="medium" noOfLines={1}>{task.title}</Text>
               </Tooltip>
            
             </Flex>

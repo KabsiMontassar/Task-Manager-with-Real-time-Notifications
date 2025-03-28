@@ -52,13 +52,8 @@ export const statusLabels: Record<TaskStatus, string> = {
   DONE: "Done",
 };
 
-export interface BoardProps {
-  light: string;
-  dark: string;
-  fontColor: string;
-}
 
-export const Board: React.FC<BoardProps> = ({ light, dark, fontColor }) => {
+export const Board: React.FC = () => {
   const [boardData, setBoardData] = useState<BoardData>({
     TODO: [],
     IN_PROGRESS: [],
@@ -76,20 +71,14 @@ export const Board: React.FC<BoardProps> = ({ light, dark, fontColor }) => {
   const fetchTasks = async () => {
     try {
       const tasks = await taskService.getAllTasks();
-      const activeTasks = tasks.filter(task => task.active !== false);
-
-      const groupedTasks = activeTasks.reduce((acc, task) => {
+      const activeonly = tasks.filter(task => task.active == true);
+      const groupedTasks = activeonly.reduce((acc, task) => {
         acc[task.status] = [...(acc[task.status] || []), task];
         return acc;
       }, { TODO: [], IN_PROGRESS: [], DONE: [] } as BoardData);
 
-      Object.keys(groupedTasks).forEach(status => {
-        groupedTasks[status as TaskStatus].sort((a, b) => (a.order ?? 0) - (b.order ?? 0));
-      });
-
-      setBoardData(groupedTasks);
+      setBoardData(groupedTasks); 
     } catch (error) {
-      console.error("Failed to fetch tasks:", error);
       toast({
         title: "Error fetching tasks",
         description: error instanceof Error ? error.message : "An error occurred",
@@ -121,6 +110,8 @@ export const Board: React.FC<BoardProps> = ({ light, dark, fontColor }) => {
       const confirmDelete = window.confirm("Are you sure you want to delete this task?");
       if (!confirmDelete) return;
       await handleDeleteTask(active.id as string); 
+
+
       return;
     }
 
@@ -210,7 +201,6 @@ export const Board: React.FC<BoardProps> = ({ light, dark, fontColor }) => {
       await taskService.updateTaskStatus(activeId, destinationColumn);
       await updateTaskOrders(boardData[destinationColumn]);
     } catch (error) {
-      console.error("Failed to update task:", error);
       toast({
         title: "Error updating task",
         description: error instanceof Error ? error.message : "An error occurred",
@@ -218,7 +208,6 @@ export const Board: React.FC<BoardProps> = ({ light, dark, fontColor }) => {
         duration: 5000,
         isClosable: true,
       });
-      fetchTasks();
     }
   };
 
@@ -352,7 +341,7 @@ export const Board: React.FC<BoardProps> = ({ light, dark, fontColor }) => {
 
   return (
     <Box p={4}>
-      <Heading color={fontColor} size="lg" mb={6} textAlign="center">
+      <Heading color="var(--font-color)" size="lg" mb={6} textAlign="center">
         Task Board
       </Heading>
       <DndContext
@@ -369,11 +358,7 @@ export const Board: React.FC<BoardProps> = ({ light, dark, fontColor }) => {
         >
           {statusOrder.map((status) => (
             <Column
-              dark={dark}
-              light={light}
-              fontColor={fontColor}
-
-
+            
               key={status}
               status={status}
               tasks={boardData[status]}

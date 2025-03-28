@@ -16,11 +16,9 @@ import Pattern from '../design/Pattern';
 import Hexagon from '../design/Hexagon';
 import ThemeSelector from '../selectors/ThemeSelector';
 import BannerSelector from '../selectors/BannerSelector';
-import { themes } from '../design/Themes';
 
 import Board from '../tasks/Board';
 
-type ThemeType = 'Light' | 'Ash' | 'Dark' | 'Oxyn';
 type BannerType = "Breezy" | "Particles" | "Pattern" | "Hexagon";
 
 const HomePage = () => {
@@ -31,10 +29,6 @@ const HomePage = () => {
 
   const { isOpen: isDrawerOpen, onOpen: onDrawerOpen, onClose: onDrawerClose } = useDisclosure();
 
-  const [theme, setTheme] = useState<ThemeType>('Light');
-  const [dark, setDark] = useState<string>(themes[theme].dark || '#28282D');
-  const [light, setLight] = useState<string>(themes[theme].light || '#333339');
-  const [fontColor, setFontColor] = useState<string>('#D8D8DB');
   const [Banner, setBanner] = useState<BannerType>("Particles");
 
   useEffect(() => {
@@ -44,7 +38,6 @@ const HomePage = () => {
         setUser(userData);
 
         const allUsers = await userService.getAllUsers();
-
         setUsers(allUsers);
       } catch (error) {
         console.error('Failed to fetch user data:', error);
@@ -57,15 +50,13 @@ const HomePage = () => {
 
     fetchUserData();
 
-    const storedTheme = localStorage.getItem('theme') as ThemeType;
     const storedBanner = localStorage.getItem('Banner') as BannerType;
     setBanner(storedBanner || 'Particles');
+  }, [navigate]);
 
-    setTheme(storedTheme || 'Light');
-    setDark(themes[theme]?.dark || '#28282D');
-    setLight(themes[theme]?.light || '#333339');
-    setFontColor(themes[theme]?.fontColor || '#D8D8DB');
-  }, [navigate, theme]);
+  const handleProfileSave = async (updatedUser: User) => {
+    setUser(updatedUser);
+  };
 
   const handleLogout = () => {
     authService.logout();
@@ -82,76 +73,60 @@ const HomePage = () => {
   }
 
   return (
-    <Flex bg={light} w="100vw" h="100vh">
+    <Flex bg="var(--light-color)" w="100vw" h="100vh">
       {user && (
-        <Flex w={250} p={25} flexDirection={"column"} bg={dark} position="relative">
+        <Flex w={250} p={4} flexDirection="column" bg="var(--dark-color)" position="relative">
           <Flex mb={4} gap={2} alignItems="center">
-            <Button w={"lg"} _hover={{ bg: 'teal.400', color: "white" }}
-              onClick={onDrawerOpen} colorScheme='teal' variant='outline'>
+            <Button onClick={onDrawerOpen} colorScheme="teal" variant="outline" _hover={{ bg: 'teal.400', color: "white" }}>
               View Profile
             </Button>
             <IconButton
-              aria-label='Logout'
-              variant='outline' colorScheme='teal'
+              aria-label="Logout"
+              variant="outline"
+              colorScheme="teal"
               _hover={{ bg: 'teal.400', color: "white" }}
-              onClick={handleLogout} icon={<NotAllowedIcon />} />
+              onClick={handleLogout}
+              icon={<NotAllowedIcon />}
+            />
           </Flex>
 
-
-
-          <Box userSelect={"none"} gap={6} display={"flex"} flexDirection={"column"} overflowY={"auto"}>
-
+          <Box userSelect="none" gap={6} display="flex" flexDirection="column" overflowY="auto">
             {users.map((test) => (
-              <Tooltip userSelect={"none"} label={test.email} aria-label='A tooltip'>
-                <Flex key={test.email} style={{ display: 'flex', alignItems: 'center', padding: '3px', gap: '6px' }}>
-                  <Avatar name={test?.firstName + ' ' + test?.lastName} />
-                  <Text color={fontColor}>
+              <Tooltip key={test.email} label={test.email} aria-label="A tooltip">
+                <Flex style={{ display: 'flex', alignItems: 'center', padding: '3px', gap: '6px' }}>
+                  <Avatar name={`${test?.firstName} ${test?.lastName}`} />
+                  <Text color="var(--font-color)">
                     {Capitalize(test?.firstName) + ' ' + Capitalize(test?.lastName)}
-                    {test?.email === user.email ? ' ( Me )' : ''}
+                    {test?.email === user.email ? ' (Me)' : ''}
                   </Text>
                 </Flex>
               </Tooltip>
             ))}
-
-
-
           </Box>
-
-
-
-
-
-
-
-
         </Flex>
       )}
-
-      <Box flex={1} p={20} overflowY={"auto"}>
-        <Board light={light} dark={dark} fontColor={fontColor} />
+      <Box flex={1} p={20} overflowY="auto">
+        <Board   />
       </Box>
+      <ThemeSelector />
 
-      <ThemeSelector setTheme={setTheme} />
-
-      <Drawer onClose={onDrawerClose} placement='left' isOpen={isDrawerOpen} size={"xl"}>
+      <Drawer onClose={onDrawerClose} placement="left" isOpen={isDrawerOpen} size="xl">
         <DrawerOverlay />
         <DrawerContent>
-          <DrawerBody p={0} bg={light}>
-            <VStack gap={0} align='stretch'>
-              <Box w={"100%"} h={"30vh"} position={"relative"} bg={dark}>
+          <DrawerBody p={0} bg="var(--light-color)">
+            <VStack gap={0} align="stretch">
+              <Box w="100%" h="30vh" position="relative" bg="var(--dark-color)">
                 <BannerSelector setBanner={setBanner} />
-
                 {Banner === "Breezy" && <Breezycherryblossoms />}
                 {Banner === "Particles" && <Particles />}
                 {Banner === "Pattern" && <Pattern />}
                 {Banner === "Hexagon" && <Hexagon />}
-
-                <Box ml={5} bg={light} position="absolute" top="22vh" p={2} borderRadius="full">
+                <Box ml={5} bg="var(--light-color)" position="absolute" top="22vh" p={2} borderRadius="full">
                   <Avatar size="2xl" name="Dan Abrahmov" src="https://bit.ly/dan-abramov" />
                 </Box>
               </Box>
               <Box>
-                {user && <Profile user={user} light={light} dark={dark} fontColor={fontColor} />}
+                {user && <Profile user={user}  onSave={handleProfileSave} />}
               </Box>
             </VStack>
           </DrawerBody>

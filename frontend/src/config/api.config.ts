@@ -1,5 +1,4 @@
 export const API_BASE_URL = 'http://localhost:3000';
-export const WS_BASE_URL = 'ws://localhost:3000';
 
 export const API_ENDPOINTS = {
   AUTH: {
@@ -19,9 +18,6 @@ export const API_ENDPOINTS = {
     STATUS: (id: string) => `/tasks/${id}/status`,
     ORDER: (id: string) => `/tasks/${id}/order`,
     ACTIVE: (id: string) => `/tasks/${id}/active`,
-  },
-  NOTIFICATIONS: {
-    BASE: '/notifications',
-    BY_ID: (id: string) => `/notifications/${id}`,
-  },
+    BATCH_UPDATE_ORDERS: '/tasks/batch-update-orders',
+  }
 };
