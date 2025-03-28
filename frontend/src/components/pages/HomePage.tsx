@@ -105,7 +105,6 @@ const HomePage = () => {
       )}
 
       <Box flex={1} p={20} overflowY={"auto"}>
-        {/* <TaskList light={dark} dark={light} fontColor={fontColor} /> */}
         <Board  />
       </Box>
 
