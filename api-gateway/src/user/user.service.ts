@@ -8,10 +8,6 @@ export class UserService {
     @Inject('USER_SERVICE') private readonly userServiceClient: ClientProxy,
   ) {}
 
-  async findOne(id: string) {
-    return firstValueFrom(this.userServiceClient.send('user_find_one', { id }));
-  }
-
   async findByEmail(email: string) {
     return firstValueFrom(
       this.userServiceClient.send('user_find_by_email', { email }),
@@ -40,10 +36,14 @@ export class UserService {
       const response = await firstValueFrom(
         this.userServiceClient.send('user_update_password', { id, data }).pipe()
       );
-      return response; // Return the complete response from microservice
+      return response;
     } catch (error) {
       console.error('Error updating password in microservice:', error);
       throw new Error('Error updating password');
     }
+  }
+
+  async findAll() {
+    return firstValueFrom(this.userServiceClient.send('user_find_all', {}));
   }
 }

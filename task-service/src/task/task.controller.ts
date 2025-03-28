@@ -1,15 +1,16 @@
 import { Controller } from '@nestjs/common';
 import { MessagePattern, Payload } from '@nestjs/microservices';
 import { TaskService } from './task.service';
-import { CreateTaskDto, UpdateTaskDto, AddCommentDto } from '../dto/task.dto';
+import { CreateTaskDto, UpdateTaskDto } from '../dto/task.dto';
 
 @Controller()
 export class TaskController {
   constructor(private readonly taskService: TaskService) {}
 
   @MessagePattern({ cmd: 'createTask' })
-  create(@Payload() { createTaskDto, userId }: { createTaskDto: CreateTaskDto; userId: string }) {
-    return this.taskService.create(createTaskDto, userId);
+  create(@Payload() payload: { createTaskDto: CreateTaskDto; userId: string }) {
+    console.log('Received payload:', payload); 
+    return this.taskService.create(payload.createTaskDto, payload.userId);
   }
 
   @MessagePattern({ cmd: 'findAllTasks' })
@@ -32,16 +33,14 @@ export class TaskController {
     return this.taskService.remove(id);
   }
 
-  @MessagePattern({ cmd: 'addComment' })
-  addComment(
-    @Payload() { id, userId, commentDto }: { id: string; userId: string; commentDto: AddCommentDto },
-  ) {
-    return this.taskService.addComment(id, userId, commentDto);
-  }
-
   @MessagePattern({ cmd: 'updateTaskOrder' })
   updateTaskOrder(@Payload() { id, newOrder }: { id: string; newOrder: number }) {
     return this.taskService.updateTaskOrder(id, newOrder);
+  }
+
+  @MessagePattern({ cmd: 'updateTaskStatus' })
+  updateStatus(@Payload() { id, status }: { id: string; status: string }) {
+    return this.taskService.updateTaskStatus(id, status);
   }
 
   @MessagePattern({ cmd: 'getTasksByAssignee' })

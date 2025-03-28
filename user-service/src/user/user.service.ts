@@ -1,10 +1,11 @@
-import { Injectable, NotFoundException } from '@nestjs/common';
+import { Injectable, NotFoundException,BadRequestException } from '@nestjs/common';
 import { InjectModel } from '@nestjs/mongoose';
 import { Model, isValidObjectId } from 'mongoose';
 import { User, UserDocument } from '../schemas/user.schema';
 import { UpdateUserDto } from '../dto/user.dto';
 import * as bcrypt from 'bcrypt';
 import { keys } from '../config/keys';
+import { v4 as uuidv4, validate as validateUuid } from 'uuid'; // Import the uuid library
 
 @Injectable()
 export class UserService {
@@ -18,26 +19,39 @@ export class UserService {
 
     async findById(id: string): Promise<UserDocument> {
         try {
-            console.log('Finding user by ID:', id); // Debug log
+            console.log('Finding user by ID:', id); 
+                
             
-            if (!isValidObjectId(id)) {
-                console.log('Invalid MongoDB ObjectId:', id); // Debug log
-                throw new Error('Invalid user ID format');
+    
+            if (validateUuid(id)) {
+                console.log('Valid UUID:', id);
+                const user = await this.userModel.findOne({ _id: id }).select('-password'); 
+                if (!user) {
+                    console.log('User not found for UUID:', id);
+                    throw new NotFoundException('User not found');
+                }
+                return user; 
             }
-
+    
+            if (!isValidObjectId(id)) {
+                console.log('Invalid ID format:', id);
+                throw new BadRequestException('Invalid user ID format');
+            }
+    
             const user = await this.userModel.findById(id).select('-password');
             if (!user) {
-                console.log('User not found for ID:', id); // Debug log
+                console.log('User not found for ObjectId:', id);
                 throw new NotFoundException('User not found');
             }
-            console.log('Found user:', user); // Debug log
-            return user;
+    
+            console.log('Found user:', user); 
+            return user; 
         } catch (error) {
-            console.error('Error finding user:', error); // Debug log
-            if (error instanceof NotFoundException) {
-                throw error;
+            console.error('Error finding user:', error); 
+            if (error instanceof NotFoundException || error instanceof BadRequestException) {
+                throw error; 
             }
-            throw new Error('Error finding user: ' + error.message);
+            throw new Error('Error finding user: ' + error.message); 
         }
     }
 
@@ -90,5 +104,10 @@ export class UserService {
         await user.save();
 
         return { success: true, message: 'Password updated successfully' };
+    }
+
+
+    async findByEmail(email: string): Promise<UserDocument> {
+        return this.userModel.findOne({ email }).select('-password');
     }
 }

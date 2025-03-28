@@ -37,22 +37,15 @@ export class Task {
   })
   priority: TaskPriority;
 
-  @Column('uuid')
-  assignedTo: string;
+  @Column({ type: 'varchar', length: 255 }) 
+assignedTo: string;
 
-  @Column('uuid')
+@Column({ type: 'varchar', length: 255 }) 
   createdBy: string;
 
-  @Column({ type: 'jsonb', nullable: true })
-  attachments: string[];
+  
 
-  @Column({ type: 'jsonb', nullable: true })
-  comments: {
-    id: string;
-    userId: string;
-    content: string;
-    createdAt: Date;
-  }[];
+ 
 
   @Column({ type: 'int', default: 0 })
   order: number;
@@ -65,4 +58,7 @@ export class Task {
 
   @Column({ nullable: true })
   dueDate: Date;
+
+  @Column({ nullable: true , default: true})
+  active: boolean;
 }

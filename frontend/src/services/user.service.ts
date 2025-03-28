@@ -17,6 +17,36 @@ export const userService = {
     }
   },
 
+  getAllUsers: async (): Promise<User[]> => {
+    try {
+      const response = await api.get(API_ENDPOINTS.USERS.BASE);
+      return response.data;
+    } catch (error: any) {
+      console.error('Error fetching users:', error.response?.data || error.message);
+      throw error;
+    }
+  },
+
+  getUserById: async (userId: string): Promise<User> => {
+    try {
+      const response = await api.get(API_ENDPOINTS.USERS.BY_ID(userId));
+      return response.data;
+    } catch (error: any) {
+      console.error('Error fetching user by ID:', error.response?.data || error.message);
+      throw error;
+    }
+  },
+
+  getUserByEmail: async (email: string): Promise<User> => {
+    try {
+      const response = await api.get(`${API_ENDPOINTS.USERS.BASE}/email/${email}`);
+      return response.data;
+    } catch (error: any) {
+      console.error('Error fetching user by email:', error.response?.data || error.message);
+      throw error;
+    }
+  },
+
   updateProfile: async (data: Partial<User>): Promise<User> => {
     try {
       const user = localStorage.getItem('user');
@@ -49,5 +79,5 @@ export const userService = {
       console.error('Error updating password:', error.response?.data || error.message);
       throw error;
     }
-  }
+  },
 };

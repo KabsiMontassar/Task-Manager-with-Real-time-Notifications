@@ -1,8 +1,20 @@
-import { IsString, IsEnum, IsOptional, IsArray, IsDate, IsNumber, IsEmail } from 'class-validator';
-import { TaskStatus, TaskPriority } from '../entities/task.entity';
+import { IsString, IsNotEmpty, IsOptional, IsNumber, IsEnum } from 'class-validator';
+
+export enum TaskStatus {
+  TODO = 'TODO',
+  IN_PROGRESS = 'IN_PROGRESS',
+  DONE = 'DONE'
+}
+
+export enum TaskPriority {
+  LOW = 'LOW',
+  MEDIUM = 'MEDIUM',
+  HIGH = 'HIGH'
+}
 
 export class CreateTaskDto {
   @IsString()
+  @IsNotEmpty()
   title: string;
 
   @IsString()
@@ -11,18 +23,15 @@ export class CreateTaskDto {
 
   @IsEnum(TaskStatus)
   @IsOptional()
-  status?: TaskStatus;
+  status?: TaskStatus = TaskStatus.TODO;
 
   @IsEnum(TaskPriority)
   @IsOptional()
-  priority?: TaskPriority;
+  priority?: TaskPriority = TaskPriority.MEDIUM;
 
   @IsString()
+  @IsNotEmpty()
   assignedTo: string;
-
-  @IsDate()
-  @IsOptional()
-  dueDate?: Date;
 
   @IsNumber()
   @IsOptional()
@@ -50,15 +59,19 @@ export class UpdateTaskDto {
   @IsOptional()
   assignedTo?: string;
 
-  @IsArray()
-  @IsOptional()
-  attachments?: string[];
-
-  @IsDate()
-  @IsOptional()
-  dueDate?: Date;
-
   @IsNumber()
   @IsOptional()
   order?: number;
+}
+
+export class UpdateStatusDto {
+  @IsEnum(TaskStatus)
+  @IsNotEmpty()
+  status: TaskStatus;
+}
+
+export class UpdateTaskOrderDto {
+  @IsNumber()
+  @IsNotEmpty()
+  order: number;
 }

@@ -1,8 +1,8 @@
-import { Injectable, NotFoundException } from '@nestjs/common';
+import { Injectable, NotFoundException, BadRequestException } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Repository } from 'typeorm';
-import { Task } from '../entities/task.entity';
-import { CreateTaskDto, UpdateTaskDto, AddCommentDto } from '../dto/task.dto';
+import { Task, TaskStatus } from '../entities/task.entity';
+import { CreateTaskDto, UpdateTaskDto } from '../dto/task.dto';
 import { v4 as uuidv4 } from 'uuid';
 
 @Injectable()
@@ -17,11 +17,14 @@ export class TaskService {
   }
 
   async create(createTaskDto: CreateTaskDto, userId: string): Promise<Task> {
+    console.log('Creating task with userId:', userId); 
     const task = this.taskRepository.create({
       ...createTaskDto,
-      assignedTo: this.convertMongoIdToUuid(createTaskDto.assignedTo),
-      createdBy: this.convertMongoIdToUuid(userId),
+      createdBy: userId,
+      status: createTaskDto.status || TaskStatus.TODO,
+      order: createTaskDto.order || 0,
     });
+    console.log('Task to be created:', task); 
     return await this.taskRepository.save(task);
   }
 
@@ -48,27 +51,12 @@ export class TaskService {
     return await this.taskRepository.save(task);
   }
 
-  async remove(id: string): Promise<void> {
+  async remove(id: string): Promise<{ message: string }> {
     const result = await this.taskRepository.delete(id);
     if (result.affected === 0) {
       throw new NotFoundException(`Task with ID ${id} not found`);
     }
-  }
-
-  async addComment(id: string, userId: string, commentDto: AddCommentDto): Promise<Task> {
-    const task = await this.findOne(id);
-    const comment = {
-      id: uuidv4(),
-      userId,
-      content: commentDto.content,
-      createdAt: new Date(),
-    };
-
-    if (!task.comments) {
-      task.comments = [];
-    }
-    task.comments.push(comment);
-    return await this.taskRepository.save(task);
+    return { message: 'Task deleted successfully' };
   }
 
   async updateTaskOrder(id: string, newOrder: number): Promise<Task> {
@@ -85,5 +73,16 @@ export class TaskService {
         createdAt: 'DESC',
       },
     });
+  }
+
+  async updateTaskStatus(id: string, status: string): Promise<Task> {
+    const task = await this.findOne(id);
+
+    if (!Object.values(TaskStatus).includes(status as TaskStatus)) {
+      throw new BadRequestException(`Invalid status: ${status}`);
+    }
+    task.status = status as TaskStatus;
+    task.updatedAt = new Date();
+    return this.taskRepository.save(task);
   }
 }

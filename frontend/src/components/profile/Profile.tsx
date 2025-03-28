@@ -25,7 +25,7 @@ interface ProfileProps {
   fontColor: string;
 }
 
-export const Profile: React.FC<ProfileProps> = ({ user,dark,light,fontColor }) => {
+export const Profile: React.FC<ProfileProps> = ({ user,fontColor }) => {
   const [isEditing, setIsEditing] = useState(false);
   const [formData, setFormData] = useState({
     firstName: user.firstName || '',

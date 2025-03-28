@@ -23,12 +23,13 @@ export class TaskService {
           )
       );
       
-      // Notify assignee
-      this.websocketGateway.emitNotification(task.assignedTo, {
-        type: 'TASK_ASSIGNED',
-        taskId: task.id,
-        title: task.title,
-      });
+      if (task.assignedTo) {
+        this.websocketGateway.emitNotification(task.assignedTo, {
+          type: 'TASK_ASSIGNED',
+          taskId: task.id,
+          title: task.title,
+        });
+      }
 
       return task;
     } catch (error) {
@@ -38,149 +39,71 @@ export class TaskService {
   }
 
   async findAll() {
-    try {
-      return await firstValueFrom(
-        this.taskService.send({ cmd: 'findAllTasks' }, {})
-          .pipe(
-            timeout(5000),
-            catchError(err => {
-              console.error('Error fetching tasks:', err);
-              throw new ServiceUnavailableException('Task service is unavailable');
-            })
-          )
-      );
-    } catch (error) {
-      console.error('Find all tasks error:', error);
-      throw error;
-    }
+    return this.handleServiceRequest({ cmd: 'findAllTasks' }, {});
   }
 
   async findOne(id: string) {
-    try {
-      return await firstValueFrom(
-        this.taskService.send({ cmd: 'findOneTask' }, id)
-          .pipe(
-            timeout(5000),
-            catchError(err => {
-              console.error('Error fetching task:', err);
-              throw new ServiceUnavailableException('Task service is unavailable');
-            })
-          )
-      );
-    } catch (error) {
-      console.error('Find task error:', error);
-      throw error;
-    }
+    return this.handleServiceRequest({ cmd: 'findOneTask' }, { id });
   }
 
   async update(id: string, updateTaskDto: any) {
-    try {
-      const task = await firstValueFrom(
-        this.taskService.send({ cmd: 'updateTask' }, { id, updateTaskDto })
-          .pipe(
-            timeout(5000),
-            catchError(err => {
-              console.error('Error updating task:', err);
-              throw new ServiceUnavailableException('Task service is unavailable');
-            })
-          )
-      );
-
-      // Notify task update
+    const task = await this.handleServiceRequest({ cmd: 'updateTask' }, { id, updateTaskDto });
+  
+    if (updateTaskDto.status || updateTaskDto.assignedTo) {
       this.websocketGateway.emitTaskUpdate(id, {
         type: 'TASK_UPDATED',
         task,
       });
-
-      return task;
-    } catch (error) {
-      console.error('Update task error:', error);
-      throw error;
     }
+  
+    return task;
   }
+  
 
   async remove(id: string) {
-    try {
-      const result = await firstValueFrom(
-        this.taskService.send({ cmd: 'removeTask' }, id)
-          .pipe(
-            timeout(5000),
-            catchError(err => {
-              console.error('Error deleting task:', err);
-              throw new ServiceUnavailableException('Task service is unavailable');
-            })
-          )
-      );
+    const result = await this.handleServiceRequest({ cmd: 'removeTask' }, { id });
 
-      // Notify task deletion
-      this.websocketGateway.emitTaskUpdate(id, {
-        type: 'TASK_DELETED',
-        taskId: id,
-      });
+    // Notify task deletion
+    this.websocketGateway.emitTaskUpdate(id, {
+      type: 'TASK_DELETED',
+      taskId: id,
+    });
 
-      return result;
-    } catch (error) {
-      console.error('Delete task error:', error);
-      throw error;
-    }
+    return result;
   }
 
-  async addComment(id: string, commentDto: any, userId: string) {
-    try {
-      const task = await firstValueFrom(
-        this.taskService.send(
-          { cmd: 'addComment' },
-          { id, comment: { ...commentDto, userId } }
-        )
-          .pipe(
-            timeout(5000),
-            catchError(err => {
-              console.error('Error adding comment:', err);
-              throw new ServiceUnavailableException('Task service is unavailable');
-            })
-          )
-      );
-
-      // Notify new comment
-      this.websocketGateway.emitTaskUpdate(id, {
-        type: 'NEW_COMMENT',
-        taskId: id,
-        comment: task.comments[task.comments.length - 1],
-      });
-
-      return task;
-    } catch (error) {
-      console.error('Add comment error:', error);
-      throw error;
-    }
-  }
+  
 
   async updateTaskStatus(id: string, status: string, userId: string) {
+    const task = await this.handleServiceRequest(
+      { cmd: 'updateTaskStatus' },
+      { id, status, userId }
+    );
+
+    // Notify status change
+    this.websocketGateway.emitTaskUpdate(id, {
+      type: 'STATUS_CHANGED',
+      taskId: id,
+      status: task.status,
+    });
+
+    return task;
+  }
+
+  private async handleServiceRequest(pattern: any, payload: any) {
     try {
-      const task = await firstValueFrom(
-        this.taskService.send(
-          { cmd: 'updateTaskStatus' },
-          { id, status, userId }
-        )
+      return await firstValueFrom(
+        this.taskService.send(pattern, payload)
           .pipe(
             timeout(5000),
             catchError(err => {
-              console.error('Error updating task status:', err);
+              console.error(`Error processing request ${pattern.cmd}:`, err);
               throw new ServiceUnavailableException('Task service is unavailable');
             })
           )
       );
-
-      // Notify status change
-      this.websocketGateway.emitTaskUpdate(id, {
-        type: 'STATUS_CHANGED',
-        taskId: id,
-        status: task.status,
-      });
-
-      return task;
     } catch (error) {
-      console.error('Update task status error:', error);
+      console.error(`Service request error for ${pattern.cmd}:`, error);
       throw error;
     }
   }

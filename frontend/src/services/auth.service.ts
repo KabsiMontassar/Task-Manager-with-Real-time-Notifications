@@ -16,8 +16,9 @@ interface RegisterData {
 
 interface User {
   id: string;
-  name: string;
   email: string;
+  firstName?: string;
+  lastName?: string;
   role: string;
 }
 
@@ -26,46 +27,68 @@ interface AuthResponse {
   user: User;
 }
 
+interface JwtPayload {
+  userId: string;
+  email: string;
+  role: string;
+  exp: number;
+}
+
 export const authService = {
   login: async (credentials: LoginCredentials): Promise<AuthResponse> => {
     try {
-      console.log('Sending login request with:', credentials);
-      const response = await api.post<AuthResponse>(API_ENDPOINTS.AUTH.LOGIN, credentials);
-      console.log('Received login response:', response.data);
+      // Clear any existing auth data
+      localStorage.removeItem('token');
+      localStorage.removeItem('user');
 
+      const response = await api.post<AuthResponse>(API_ENDPOINTS.AUTH.LOGIN, credentials);
       const { access_token, user } = response.data;
-      
+
       if (!access_token || !user) {
-        console.error('Missing token or user in response:', response.data);
         throw new Error('Invalid response from server');
       }
 
+      // Store token
       localStorage.setItem('token', access_token);
+
+      // Store user data
       localStorage.setItem('user', JSON.stringify(user));
-      
-      console.log('Stored token and user:', { access_token, user });
+
       return response.data;
-    } catch (error) {
-      console.error('Login error in auth service:', error);
+    } catch (error: any) {
+      console.error('Login error:', error);
+      // Clean up any partial data
+      localStorage.removeItem('token');
+      localStorage.removeItem('user');
       throw error;
     }
   },
 
   register: async (data: RegisterData): Promise<AuthResponse> => {
     try {
-      console.log('Sending registration request with:', data);
-      const response = await api.post<AuthResponse>(API_ENDPOINTS.AUTH.REGISTER, data);
-      console.log('Received registration response:', response.data);
+      // Clear any existing auth data
+      localStorage.removeItem('token');
+      localStorage.removeItem('user');
 
+      const response = await api.post<AuthResponse>(API_ENDPOINTS.AUTH.REGISTER, data);
       const { access_token, user } = response.data;
 
-      if (access_token && user) {
-        localStorage.setItem('token', access_token);
-        localStorage.setItem('user', JSON.stringify(user));
+      if (!access_token || !user) {
+        throw new Error('Invalid response from server');
       }
+
+      // Store token
+      localStorage.setItem('token', access_token);
+
+      // Store user data
+      localStorage.setItem('user', JSON.stringify(user));
+
       return response.data;
-    } catch (error) {
+    } catch (error: any) {
       console.error('Register error:', error);
+      // Clean up any partial data
+      localStorage.removeItem('token');
+      localStorage.removeItem('user');
       throw error;
     }
   },
@@ -73,23 +96,53 @@ export const authService = {
   logout: () => {
     localStorage.removeItem('token');
     localStorage.removeItem('user');
+    window.location.href = '/login';
   },
 
   getCurrentUser: (): User | null => {
-    const user = localStorage.getItem('user');
-    return user ? JSON.parse(user) : null;
+    try {
+      const userStr = localStorage.getItem('user');
+      const token = localStorage.getItem('token');
+
+      if (!userStr || !token) {
+        return null;
+      }
+
+      // Check token validity
+      if (!authService.isAuthenticated()) {
+        authService.logout();
+        return null;
+      }
+
+      return JSON.parse(userStr);
+    } catch (error) {
+      console.error('Error getting current user:', error);
+      authService.logout();
+      return null;
+    }
   },
 
-  isAuthenticated: () => {
-    const token = localStorage.getItem('token');
-    if (!token) return false;
-
+  isAuthenticated: (): boolean => {
     try {
-      const decoded = jwtDecode(token);
-      if (!decoded.exp) return false;
-      return decoded.exp * 1000 > Date.now();
+      const token = localStorage.getItem('token');
+      if (!token) {
+        return false;
+      }
+
+      const decoded = jwtDecode<JwtPayload>(token);
+      if (!decoded || !decoded.exp) {
+        return false;
+      }
+
+      const isValid = decoded.exp * 1000 > Date.now();
+      if (!isValid) {
+        authService.logout();
+      }
+
+      return isValid;
     } catch (error) {
       console.error('Token validation error:', error);
+      authService.logout();
       return false;
     }
   }

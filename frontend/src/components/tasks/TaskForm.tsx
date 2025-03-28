@@ -1,109 +1,263 @@
 import React, { useState, useEffect } from 'react';
-import { Task, TaskPriority } from '../../types/task';
+import { Task, TaskPriority, TaskStatus } from '../../types/task';
 import { taskService } from '../../services/task.service';
+import { userService } from '../../services/user.service';
+import {
+  FormControl,
+  FormLabel,
+  Input,
+  Textarea,
+  Select,
+  Button,
+  VStack,
+  Alert,
+  AlertIcon,
+  Box,
+  InputGroup,
+  InputRightElement,
+  Spinner,
+  Tooltip,
+} from '@chakra-ui/react';
+import { CheckIcon, CloseIcon } from '@chakra-ui/icons';
 
 interface TaskFormProps {
-  task?: Task;
+  task: Task | null;
   onSubmit: () => void;
-  onCancel: () => void;
+  light: string;
+  fontColor: string;
 }
 
-export const TaskForm: React.FC<TaskFormProps> = ({ task, onSubmit, onCancel }) => {
-  const [formData, setFormData] = useState({
-    title: '',
-    description: '',
-    dueDate: '',
-    priority: TaskPriority.MEDIUM,
-    assignedTo: '',
+export const TaskForm: React.FC<TaskFormProps> = ({ 
+  task, 
+  onSubmit,
+  light,
+  fontColor
+}) => {
+  const [formData, setFormData] = useState<Partial<Task>>({
+    id: task?.id || '',
+    title: task?.title || '',
+    description: task?.description || '',
+    dueDate: task?.dueDate ? new Date(task.dueDate).toISOString().split('T')[0] : '',
+    priority: task?.priority || TaskPriority.MEDIUM,
+    status: task?.status || TaskStatus.TODO,
+    assignedTo: task?.assignedTo || '',
+    createdBy: task?.createdBy || '',
+    attachments: task?.attachments || [],
+    comments: task?.comments || [],
+    createdAt: task?.createdAt || new Date().toISOString(),
+    updatedAt: task?.updatedAt || new Date().toISOString(),
   });
 
   useEffect(() => {
-    if (task) {
-      setFormData({
-        title: task.title,
-        description: task.description || '',
-        dueDate: task.dueDate?.split('T')[0] || '',
-        priority: task.priority,
-        assignedTo: task.assignedTo || '',
-      });
+    const initializeUser = async () => {
+      try {
+        const currentUser = await userService.getCurrentUser();
+        setFormData(prev => ({
+          ...prev,
+          createdBy: prev.createdBy || currentUser.email
+        }));
+      } catch (error) {
+        console.error('Error fetching current user:', error);
+      }
+    };
+
+    if (!task) {
+      initializeUser();
     }
   }, [task]);
 
+  const [error, setError] = useState<string>('');
+  const [isCheckingUser, setIsCheckingUser] = useState(false);
+  const [isValidUser, setIsValidUser] = useState(false);
+  const [userCheckTimeout, setUserCheckTimeout] = useState<NodeJS.Timeout | null>(null);
+
+  useEffect(() => {
+    if (formData.assignedTo) {
+      validateUser(formData.assignedTo);
+    }
+  }, []);
+
+  const validateUser = async (email: string) => {
+    if (!email) {
+      setIsValidUser(false);
+      return;
+    }
+
+    setIsCheckingUser(true);
+    try {
+      const user = await userService.getUserByEmail(email);
+      setIsValidUser(user && user.email === email);
+    } catch (error) {
+      setIsValidUser(false);
+    } finally {
+      setIsCheckingUser(false);
+    }
+  };
+
+  const handleInputChange = (
+    e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement | HTMLSelectElement>
+  ) => {
+    const { name, value } = e.target;
+    setFormData((prev) => ({ ...prev, [name]: value }));
+
+    if (name === 'assignedTo') {
+      setIsValidUser(false);
+      if (userCheckTimeout) {
+        clearTimeout(userCheckTimeout);
+      }
+      const timeoutId = setTimeout(() => validateUser(value), 500);
+      setUserCheckTimeout(timeoutId);
+    }
+
+    setError('');
+  };
+
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
+    setError('');
+
+    if (!formData.title?.trim()) {
+      setError('Title is required');
+      return;
+    }
+
+    if (!formData.assignedTo?.trim()) {
+      setError('Assigned user is required');
+      return;
+    }
+
+    if (!isValidUser) {
+      setError('Please enter a valid user email');
+      return;
+    }
+
     try {
-      if (task) {
-        await taskService.updateTask(task.id, formData);
+      const taskData = {
+        ...formData,
+        updatedAt: new Date().toISOString(),
+      } as Task;
+
+      if (task?.id) {
+        await taskService.updateTask(task.id, taskData);
       } else {
-        await taskService.createTask(formData);
+        await taskService.createTask(taskData);
       }
       onSubmit();
-    } catch (error) {
-      console.error('Error saving task:', error);
+    } catch (error: any) {
+      setError(error.response?.data?.message || 'Failed to save task');
     }
   };
 
   return (
-    <form onSubmit={handleSubmit} className="space-y-4 p-4 bg-white rounded-lg shadow">
-      <div>
-        <label className="block text-sm font-medium text-gray-700">Title</label>
-        <input
-          type="text"
-          value={formData.title}
-          onChange={(e) => setFormData({ ...formData, title: e.target.value })}
-          className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500"
-          required
-        />
-      </div>
+    <Box as="form" onSubmit={handleSubmit}>
+      <VStack spacing={4} align="stretch">
+        {error && (
+          <Alert status="error" borderRadius="md">
+            <AlertIcon />
+            {error}
+          </Alert>
+        )}
 
-      <div>
-        <label className="block text-sm font-medium text-gray-700">Description</label>
-        <textarea
-          value={formData.description}
-          onChange={(e) => setFormData({ ...formData, description: e.target.value })}
-          className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500"
-          rows={3}
-        />
-      </div>
+        <FormControl isRequired>
+          <FormLabel color={fontColor}>Title</FormLabel>
+          <Input
+            name="title"
+            value={formData.title}
+            onChange={handleInputChange}
+            bg={light}
+            color={fontColor}
+          />
+        </FormControl>
 
-      <div>
-        <label className="block text-sm font-medium text-gray-700">Due Date</label>
-        <input
-          type="date"
-          value={formData.dueDate}
-          onChange={(e) => setFormData({ ...formData, dueDate: e.target.value })}
-          className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500"
-        />
-      </div>
+        <FormControl>
+          <FormLabel color={fontColor}>Description</FormLabel>
+          <Textarea
+            name="description"
+            value={formData.description}
+            onChange={handleInputChange}
+            bg={light}
+            color={fontColor}
+          />
+        </FormControl>
 
-      <div>
-        <label className="block text-sm font-medium text-gray-700">Priority</label>
-        <select
-          value={formData.priority}
-          onChange={(e) => setFormData({ ...formData, priority: e.target.value as TaskPriority })}
-          className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500"
-        >
-          <option value={TaskPriority.LOW}>Low</option>
-          <option value={TaskPriority.MEDIUM}>Medium</option>
-          <option value={TaskPriority.HIGH}>High</option>
-        </select>
-      </div>
+        <FormControl>
+          <FormLabel color={fontColor}>Due Date</FormLabel>
+          <Input
+            type="date"
+            name="dueDate"
+            value={formData.dueDate}
+            onChange={handleInputChange}
+            bg={light}
+            color={fontColor}
+          />
+        </FormControl>
 
-      <div className="flex justify-end space-x-2 mt-4">
-        <button
-          type="button"
-          onClick={onCancel}
-          className="px-4 py-2 text-sm font-medium text-gray-700 bg-white border border-gray-300 rounded-md hover:bg-gray-50"
-        >
-          Cancel
-        </button>
-        <button
-          type="submit"
-          className="px-4 py-2 text-sm font-medium text-white bg-indigo-600 border border-transparent rounded-md hover:bg-indigo-700"
-        >
-          {task ? 'Update Task' : 'Create Task'}
-        </button>
-      </div>
-    </form>
+        <FormControl isRequired>
+          <FormLabel color={fontColor}>Priority</FormLabel>
+          <Select
+            name="priority"
+            value={formData.priority}
+            onChange={handleInputChange}
+            bg={light}
+            color={fontColor}
+          >
+            {Object.values(TaskPriority).map((priority) => (
+              <option key={priority} value={priority}>
+                {priority}
+              </option>
+            ))}
+          </Select>
+        </FormControl>
+
+        <FormControl isRequired>
+          <FormLabel color={fontColor}>Status</FormLabel>
+          <Select
+            name="status"
+            value={formData.status}
+            onChange={handleInputChange}
+            bg={light}
+            color={fontColor}
+          >
+            {Object.values(TaskStatus).map((status) => (
+              <option key={status} value={status}>
+                {status.replace('_', ' ')}
+              </option>
+            ))}
+          </Select>
+        </FormControl>
+
+        <FormControl isRequired>
+          <FormLabel color={fontColor}>Assign To (Email)</FormLabel>
+          <InputGroup>
+            <Input
+              name="assignedTo"
+              value={formData.assignedTo}
+              onChange={handleInputChange}
+              bg={light}
+              color={fontColor}
+            />
+            <InputRightElement>
+              {isCheckingUser ? (
+                <Spinner size="sm" />
+              ) : formData.assignedTo ? (
+                isValidUser ? (
+                  <Tooltip label="Valid user">
+                    <CheckIcon color="green.500" />
+                  </Tooltip>
+                ) : (
+                  <Tooltip label="Invalid user">
+                    <CloseIcon color="red.500" />
+                  </Tooltip>
+                )
+              ) : null}
+            </InputRightElement>
+          </InputGroup>
+        </FormControl>
+
+        <Button type="submit" colorScheme="teal" isLoading={isCheckingUser}>
+          {task?.id ? 'Update Task' : 'Create Task'}
+        </Button>
+      </VStack>
+    </Box>
   );
 };

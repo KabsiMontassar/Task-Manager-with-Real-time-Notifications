@@ -26,6 +26,8 @@ export class User {
 
     @Prop({ default: true })
     isActive: boolean;
+
+    
 }
 
 export type UserDocument = User & Document;

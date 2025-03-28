@@ -30,22 +30,25 @@ const Login = () => {
       ...prev,
       [name]: value,
     }));
+    setError(""); // Clear error when user types
   };
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
+    if (!formData.email || !formData.password) {
+      setError("Please enter both email and password");
+      return;
+    }
+
     setError("");
     setLoading(true);
 
     try {
-      const response = await authService.login(formData);
+      await authService.login(formData);
 
-      if (!response.access_token || !response.user) {
-        throw new Error("Invalid response from server");
-      }
-
+      // Check if we're actually authenticated
       if (!authService.isAuthenticated()) {
-        throw new Error("Authentication verification failed");
+        throw new Error("Login failed - please try again");
       }
 
       toast({
@@ -56,7 +59,7 @@ const Login = () => {
         isClosable: true,
       });
 
-      navigate("/");
+      navigate("/", { replace: true });
     } catch (err: any) {
       console.error("Login error:", err);
       setError(
@@ -89,7 +92,7 @@ const Login = () => {
         </Heading>
 
         {error && (
-          <Alert status="error" mb={4}>
+          <Alert status="error" mb={4} borderRadius="md">
             <AlertIcon />
             {error}
           </Alert>
@@ -104,7 +107,9 @@ const Login = () => {
                 name="email"
                 value={formData.email}
                 onChange={handleChange}
-                placeholder="Enter your email"
+                isDisabled={loading}
+                autoComplete="email"
+                autoFocus
               />
             </FormControl>
 
@@ -115,7 +120,8 @@ const Login = () => {
                 name="password"
                 value={formData.password}
                 onChange={handleChange}
-                placeholder="Enter your password"
+                isDisabled={loading}
+                autoComplete="current-password"
               />
             </FormControl>
 
@@ -129,10 +135,10 @@ const Login = () => {
               Login
             </Button>
 
-            <Text fontSize="sm">
+            <Text>
               Don't have an account?{" "}
-              <Link to="/register" style={{ color: "#319795" }}>
-                Register
+              <Link to="/register" style={{ color: "teal" }}>
+                Register here
               </Link>
             </Text>
           </VStack>

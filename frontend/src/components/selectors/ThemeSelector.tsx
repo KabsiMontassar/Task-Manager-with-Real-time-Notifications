@@ -1,7 +1,7 @@
 import { useState, useEffect } from "react";
 import { Box, Circle, Tooltip, Icon } from "@chakra-ui/react";
 import { CheckIcon } from "@chakra-ui/icons";
-import { themes } from "./design/Themes";
+import { themes } from "../design/Themes";
 
 type ThemeType = "Light" | "Ash" | "Dark" | "Oxyn";
 
