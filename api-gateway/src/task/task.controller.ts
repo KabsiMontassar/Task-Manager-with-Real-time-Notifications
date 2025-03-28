@@ -24,7 +24,14 @@ export class TaskController {
   @Post()
   @UsePipes(new ValidationPipe())
   async create(@Body() createTaskDto: CreateTaskDto, @Request() req) {
-    return this.taskClient.send({ cmd: 'createTask' }, { createTaskDto, userId: req.user.id });
+    console.log('Creating task with user:', req.user); 
+    return this.taskClient.send(
+      { cmd: 'createTask' },
+      { 
+        createTaskDto,
+        userId: req.user.email 
+      }
+    );
   }
 
   @Get()

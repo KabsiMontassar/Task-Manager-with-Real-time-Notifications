@@ -33,18 +33,25 @@ const Login = () => {
   };
 
   const handleSubmit = async (e: React.FormEvent) => {
-    e.preventDefault();
+    e.preventDefault(); // Prevent form submission
     setError("");
     setLoading(true);
 
     try {
+      console.log('Attempting login with:', formData);
       const response = await authService.login(formData);
+      console.log('Login response:', response);
 
+      // Verify we have both token and user
       if (!response.access_token || !response.user) {
         throw new Error("Invalid response from server");
       }
 
-      if (!authService.isAuthenticated()) {
+      // Verify token is stored and valid
+      const token = localStorage.getItem('token');
+      console.log('Stored token:', token);
+      
+      if (!token || !authService.isAuthenticated()) {
         throw new Error("Authentication verification failed");
       }
 
@@ -56,7 +63,8 @@ const Login = () => {
         isClosable: true,
       });
 
-      navigate("/");
+      // Use replace to prevent going back to login page
+      navigate("/", { replace: true });
     } catch (err: any) {
       console.error("Login error:", err);
       setError(
@@ -64,6 +72,10 @@ const Login = () => {
           err.message ||
           "Failed to login. Please check your credentials."
       );
+      
+      // Clear any invalid tokens
+      localStorage.removeItem('token');
+      localStorage.removeItem('user');
     } finally {
       setLoading(false);
     }
@@ -104,7 +116,7 @@ const Login = () => {
                 name="email"
                 value={formData.email}
                 onChange={handleChange}
-                placeholder="Enter your email"
+                isDisabled={loading}
               />
             </FormControl>
 
@@ -115,7 +127,7 @@ const Login = () => {
                 name="password"
                 value={formData.password}
                 onChange={handleChange}
-                placeholder="Enter your password"
+                isDisabled={loading}
               />
             </FormControl>
 
@@ -129,10 +141,10 @@ const Login = () => {
               Login
             </Button>
 
-            <Text fontSize="sm">
+            <Text>
               Don't have an account?{" "}
-              <Link to="/register" style={{ color: "#319795" }}>
-                Register
+              <Link to="/register" style={{ color: "teal" }}>
+                Register here
               </Link>
             </Text>
           </VStack>

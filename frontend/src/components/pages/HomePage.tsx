@@ -2,7 +2,7 @@ import { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { authService } from '../../services/auth.service';
 import { userService } from '../../services/user.service';
-import Board from '../Board';
+import { TaskList } from '../tasks/TaskList';
 import {
   Flex, IconButton, Button, Avatar, Text, Box,
   Drawer, DrawerBody, VStack, DrawerOverlay,
@@ -18,30 +18,33 @@ import Hexagon from '../design/Hexagon';
 import ThemeSelector from '../selectors/ThemeSelector';
 import BannerSelector from '../selectors/BannerSelector';
 import { themes } from '../design/Themes';
+
 type ThemeType = 'Light' | 'Ash' | 'Dark' | 'Oxyn';
 type BannerType = "Breezy" | "Particles" | "Pattern" | "Hexagon";
 
 const HomePage = () => {
   const navigate = useNavigate();
   const [user, setUser] = useState<User | null>(null);
+  const [users, setUsers] = useState<User[]>([]);
   const [loading, setLoading] = useState(true);
 
-
   const { isOpen: isDrawerOpen, onOpen: onDrawerOpen, onClose: onDrawerClose } = useDisclosure();
-
-
-
 
   const [theme, setTheme] = useState<ThemeType>('Light');
   const [dark, setDark] = useState<string>(themes[theme].dark || '#28282D');
   const [light, setLight] = useState<string>(themes[theme].light || '#333339');
   const [fontColor, setFontColor] = useState<string>('#D8D8DB');
   const [Banner, setBanner] = useState<BannerType>("Particles");
+
   useEffect(() => {
     const fetchUserData = async () => {
       try {
         const userData = await userService.getCurrentUser();
         setUser(userData);
+
+        // Load all users
+        const allUsers = await userService.getAllUsers();
+        setUsers(allUsers);
       } catch (error) {
         console.error('Failed to fetch user data:', error);
         authService.logout();
@@ -63,7 +66,6 @@ const HomePage = () => {
     setFontColor(themes[theme]?.fontColor || '#D8D8DB');
   }, [navigate, theme]);
 
-
   const handleLogout = () => {
     authService.logout();
     navigate('/login');
@@ -77,9 +79,6 @@ const HomePage = () => {
   if (loading) {
     return <div className="loading">Loading...</div>;
   }
-
-
-
 
   return (
     <Flex bg={light} w="100vw" h="100vh">
@@ -105,7 +104,7 @@ const HomePage = () => {
       )}
 
       <Box flex={1} p={20} overflowY={"auto"}>
-        <Board light={dark} dark={light} fontColor={fontColor} />
+        <TaskList light={dark} dark={light} fontColor={fontColor} />
       </Box>
 
       <ThemeSelector setTheme={setTheme} />
@@ -116,18 +115,32 @@ const HomePage = () => {
           <DrawerBody p={0} bg={light}>
             <VStack gap={0} align='stretch'>
               <Box w={"100%"} h={"30vh"} position={"relative"} bg={dark}>
-
-
                 <BannerSelector setBanner={setBanner} />
-
 
                 {Banner === "Breezy" && <Breezycherryblossoms />}
                 {Banner === "Particles" && <Particles />}
                 {Banner === "Pattern" && <Pattern />}
                 {Banner === "Hexagon" && <Hexagon />}
-                <Box ml={5} bg={light} position="absolute" top="22vh" p={2} borderRadius="full">
-                  <Avatar size="2xl" name="Dan Abrahmov" src="https://bit.ly/dan-abramov" />
-                </Box>
+                
+                <Flex ml={5} position="absolute" top="22vh" gap={2} overflowX="auto" p={2}>
+                  {users.map(u => (
+                    <Box key={u.email} bg={light} p={2} borderRadius="full">
+                      <Avatar 
+                        size="2xl" 
+                        name={`${u.firstName} ${u.lastName}`}
+                        bg={u.email === user?.email ? 'green.500' : 'gray.500'}
+                      />
+                      <Text 
+                        color={fontColor} 
+                        fontSize="sm" 
+                        textAlign="center" 
+                        mt={2}
+                      >
+                        {u.firstName}
+                      </Text>
+                    </Box>
+                  ))}
+                </Flex>
               </Box>
               <Box>
                 {user && <Profile user={user} light={dark} dark={light} fontColor={fontColor} />}
@@ -136,7 +149,6 @@ const HomePage = () => {
           </DrawerBody>
         </DrawerContent>
       </Drawer>
-
     </Flex>
   );
 };

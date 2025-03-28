@@ -39,16 +39,16 @@ export interface Task {
   updatedAt: string;
 }
 
-export interface TaskDetails extends Task {
-  assigneeDetails: {
+export interface TaskWithUser extends Task {
+  assignedToUser?: {
+    firstName: string;
+    lastName: string;
+  };
+  creatorDetails?: {
     id: string;
     name: string;
   };
-  creatorDetails: {
-    id: string;
-    name: string;
-  };
-  commentDetails: {
+  commentDetails?: {
     id: string;
     content: string;
     userId: string;

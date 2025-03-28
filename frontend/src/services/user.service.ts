@@ -17,6 +17,36 @@ export const userService = {
     }
   },
 
+  getAllUsers: async (): Promise<User[]> => {
+    try {
+      const response = await api.get(API_ENDPOINTS.USERS.BASE);
+      return response.data;
+    } catch (error: any) {
+      console.error('Error fetching users:', error.response?.data || error.message);
+      throw error;
+    }
+  },
+
+  getUserById: async (userId: string): Promise<User> => {
+    try {
+      const response = await api.get(API_ENDPOINTS.USERS.BY_ID(userId));
+      return response.data;
+    } catch (error: any) {
+      console.error('Error fetching user by ID:', error.response?.data || error.message);
+      throw error;
+    }
+  },
+
+  getUserByEmail: async (email: string): Promise<User> => {
+    try {
+      const response = await api.get(`${API_ENDPOINTS.USERS.BASE}/email/${email}`);
+      return response.data;
+    } catch (error: any) {
+      console.error('Error fetching user by email:', error.response?.data || error.message);
+      throw error;
+    }
+  },
+
   updateProfile: async (data: Partial<User>): Promise<User> => {
     try {
       const user = localStorage.getItem('user');
@@ -47,17 +77,6 @@ export const userService = {
       });
     } catch (error: any) {
       console.error('Error updating password:', error.response?.data || error.message);
-      throw error;
-    }
-  },
-
-  getUser: async (userId: string): Promise<User> => {
-    try {
-      // Use the ME endpoint with a query parameter for the user ID
-      const response = await api.get(`${API_ENDPOINTS.USERS.ME}/${userId}`);
-      return response.data;
-    } catch (error: any) {
-      console.error('Error fetching user:', error.response?.data || error.message);
       throw error;
     }
   },

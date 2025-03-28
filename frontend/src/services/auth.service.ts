@@ -16,8 +16,9 @@ interface RegisterData {
 
 interface User {
   id: string;
-  name: string;
   email: string;
+  firstName?: string;
+  lastName?: string;
   role: string;
 }
 
@@ -40,13 +41,25 @@ export const authService = {
         throw new Error('Invalid response from server');
       }
 
+      // Store token first
       localStorage.setItem('token', access_token);
+      
+      // Validate token before storing user
+      const decoded = jwtDecode(access_token);
+      if (!decoded || !decoded.exp || decoded.exp * 1000 <= Date.now()) {
+        throw new Error('Invalid token received');
+      }
+
+      // Store user data
       localStorage.setItem('user', JSON.stringify(user));
       
-      console.log('Stored token and user:', { access_token, user });
+      console.log('Successfully stored token and user');
       return response.data;
-    } catch (error) {
+    } catch (error: any) {
       console.error('Login error in auth service:', error);
+      // Clean up any partial data
+      localStorage.removeItem('token');
+      localStorage.removeItem('user');
       throw error;
     }
   },
@@ -59,13 +72,28 @@ export const authService = {
 
       const { access_token, user } = response.data;
 
-      if (access_token && user) {
-        localStorage.setItem('token', access_token);
-        localStorage.setItem('user', JSON.stringify(user));
+      if (!access_token || !user) {
+        throw new Error('Invalid response from server');
       }
+
+      // Store token first
+      localStorage.setItem('token', access_token);
+      
+      // Validate token
+      const decoded = jwtDecode(access_token);
+      if (!decoded || !decoded.exp || decoded.exp * 1000 <= Date.now()) {
+        throw new Error('Invalid token received');
+      }
+
+      // Store user data
+      localStorage.setItem('user', JSON.stringify(user));
+      
       return response.data;
     } catch (error) {
       console.error('Register error:', error);
+      // Clean up any partial data
+      localStorage.removeItem('token');
+      localStorage.removeItem('user');
       throw error;
     }
   },
@@ -76,20 +104,54 @@ export const authService = {
   },
 
   getCurrentUser: (): User | null => {
-    const user = localStorage.getItem('user');
-    return user ? JSON.parse(user) : null;
+    try {
+      const user = localStorage.getItem('user');
+      if (!user) return null;
+
+      const token = localStorage.getItem('token');
+      if (!token) {
+        // Token missing but user exists - clean up
+        localStorage.removeItem('user');
+        return null;
+      }
+
+      // Validate token
+      const decoded = jwtDecode(token);
+      if (!decoded || !decoded.exp || decoded.exp * 1000 <= Date.now()) {
+        // Token invalid - clean up
+        localStorage.removeItem('token');
+        localStorage.removeItem('user');
+        return null;
+      }
+
+      return JSON.parse(user);
+    } catch (error) {
+      console.error('Error getting current user:', error);
+      return null;
+    }
   },
 
-  isAuthenticated: () => {
-    const token = localStorage.getItem('token');
-    if (!token) return false;
-
+  isAuthenticated: (): boolean => {
     try {
+      const token = localStorage.getItem('token');
+      if (!token) return false;
+
       const decoded = jwtDecode(token);
-      if (!decoded.exp) return false;
-      return decoded.exp * 1000 > Date.now();
+      if (!decoded || !decoded.exp) return false;
+
+      const isValid = decoded.exp * 1000 > Date.now();
+      if (!isValid) {
+        // Clean up expired token
+        localStorage.removeItem('token');
+        localStorage.removeItem('user');
+      }
+
+      return isValid;
     } catch (error) {
       console.error('Token validation error:', error);
+      // Clean up invalid token
+      localStorage.removeItem('token');
+      localStorage.removeItem('user');
       return false;
     }
   }

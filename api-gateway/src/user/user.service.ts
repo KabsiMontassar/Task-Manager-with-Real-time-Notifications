@@ -42,4 +42,8 @@ export class UserService {
       throw new Error('Error updating password');
     }
   }
+
+  async findAll() {
+    return firstValueFrom(this.userServiceClient.send('user_find_all', {}));
+  }
 }

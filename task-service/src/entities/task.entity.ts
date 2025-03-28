@@ -37,10 +37,10 @@ export class Task {
   })
   priority: TaskPriority;
 
-  @Column('uuid')
-  assignedTo: string;
+  @Column({ type: 'varchar', length: 255 }) 
+assignedTo: string;
 
-  @Column('uuid')
+@Column({ type: 'varchar', length: 255 }) 
   createdBy: string;
 
   

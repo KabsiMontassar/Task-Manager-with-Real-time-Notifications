@@ -17,11 +17,14 @@ export class TaskService {
   }
 
   async create(createTaskDto: CreateTaskDto, userId: string): Promise<Task> {
+    console.log('Creating task with userId:', userId); 
     const task = this.taskRepository.create({
       ...createTaskDto,
-      assignedTo: createTaskDto.assignedTo,
       createdBy: userId,
+      status: createTaskDto.status || TaskStatus.TODO,
+      order: createTaskDto.order || 0,
     });
+    console.log('Task to be created:', task); 
     return await this.taskRepository.save(task);
   }
 

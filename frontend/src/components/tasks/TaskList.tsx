@@ -1,23 +1,128 @@
 import React, { useState, useEffect } from 'react';
-import { Task } from '../../types/task';
+import {
+  DndContext,
+  DragEndEvent,
+  DragOverlay,
+  closestCorners,
+  KeyboardSensor,
+  PointerSensor,
+  useSensor,
+  useSensors,
+} from '@dnd-kit/core';
+import {
+  arrayMove,
+  SortableContext,
+  sortableKeyboardCoordinates,
+  verticalListSortingStrategy,
+} from '@dnd-kit/sortable';
+import {
+  TaskStatus,
+  TaskWithUser
+} from '../../types/task';
 import { taskService } from '../../services/task.service';
+import { userService } from '../../services/user.service';
+import { webSocketService } from '../../services/websocket.service';
 import { TaskForm } from './TaskForm';
+import { DraggableTask } from './DraggableTask';
+import {
+  Box,
+  Grid,
+  GridItem,
+  Heading,
+  IconButton,
+  useToast,
+  Modal,
+  ModalOverlay,
+  ModalContent,
+  ModalHeader,
+  ModalBody,
+  ModalCloseButton,
+  Flex,
+  useDisclosure,
+} from '@chakra-ui/react';
+import { AddIcon } from '@chakra-ui/icons';
 
-export const TaskList: React.FC = () => {
-  const [tasks, setTasks] = useState<Task[]>([]);
-  const [isFormOpen, setIsFormOpen] = useState(false);
-  const [selectedTask, setSelectedTask] = useState<Task | null>(null);
+interface TaskListProps {
+  light: string;
+  dark: string;
+  fontColor: string;
+}
+
+export const TaskList: React.FC<TaskListProps> = ({ light, dark, fontColor }) => {
+  const [tasks, setTasks] = useState<TaskWithUser[]>([]);
+  const [activeId, setActiveId] = useState<string | null>(null);
+  const { isOpen, onOpen, onClose } = useDisclosure();
+  const [selectedTask, setSelectedTask] = useState<TaskWithUser | null>(null);
+  const toast = useToast();
+
+  const sensors = useSensors(
+    useSensor(PointerSensor),
+    useSensor(KeyboardSensor, {
+      coordinateGetter: sortableKeyboardCoordinates,
+    })
+  );
 
   useEffect(() => {
     loadTasks();
+    webSocketService.connect();
+
+    const unsubscribeUpdate = webSocketService.onTaskUpdate((updatedTask) => {
+      setTasks((prevTasks) => {
+        const index = prevTasks.findIndex((t) => t.id === updatedTask.id);
+        if (index === -1) {
+          return [...prevTasks, updatedTask as TaskWithUser];
+        }
+        const newTasks = [...prevTasks];
+        newTasks[index] = { ...updatedTask, assignedToUser: prevTasks[index].assignedToUser };
+        return newTasks;
+      });
+    });
+
+    const unsubscribeDelete = webSocketService.onTaskDelete((taskId) => {
+      setTasks((prevTasks) => prevTasks.filter((t) => t.id !== taskId));
+    });
+
+    return () => {
+      unsubscribeUpdate();
+      unsubscribeDelete();
+      webSocketService.disconnect();
+    };
   }, []);
 
   const loadTasks = async () => {
     try {
-      const data = await taskService.getAllTasks();
-      setTasks(data);
+      const fetchedTasks = await taskService.getAllTasks();
+      const tasksWithUsers = await Promise.all(
+        fetchedTasks.map(async (task) => {
+          try {
+            const user = await userService.getUserByEmail(task.assignedTo);
+            return {
+              ...task,
+              assignedToUser: {
+                firstName: user.firstName,
+                lastName: user.lastName,
+              },
+            };
+          } catch (error) {
+            console.error(`Error fetching user for task ${task.id}:`, error);
+            return {
+              ...task,
+              assignedToUser: {
+                firstName: 'Unknown',
+                lastName: 'User',
+              },
+            };
+          }
+        })
+      );
+      setTasks(tasksWithUsers);
     } catch (error) {
-      console.error('Error loading tasks:', error);
+      toast({
+        title: 'Error loading tasks',
+        status: 'error',
+        duration: 3000,
+        isClosable: true,
+      });
     }
   };
 
@@ -26,88 +131,215 @@ export const TaskList: React.FC = () => {
       try {
         await taskService.deleteTask(taskId);
         setTasks(tasks.filter(task => task.id !== taskId));
+        toast({
+          title: 'Task deleted successfully',
+          status: 'success',
+          duration: 2000,
+          isClosable: true,
+        });
       } catch (error) {
-        console.error('Error deleting task:', error);
+        toast({
+          title: 'Error deleting task',
+          status: 'error',
+          duration: 3000,
+          isClosable: true,
+        });
       }
     }
   };
 
-  const handleEdit = (task: Task) => {
+  const handleEdit = (task: TaskWithUser) => {
     setSelectedTask(task);
-    setIsFormOpen(true);
+    onOpen();
   };
 
   const handleFormSubmit = () => {
-    setIsFormOpen(false);
+    onClose();
     setSelectedTask(null);
     loadTasks();
   };
 
-  const handleFormCancel = () => {
-    setIsFormOpen(false);
-    setSelectedTask(null);
+  const handleDragStart = (event: DragEndEvent) => {
+    setActiveId(event.active.id as string);
   };
 
-  return (
-    <div className="container mx-auto p-4">
-      <div className="flex justify-between items-center mb-4">
-        <h2 className="text-2xl font-bold">Tasks</h2>
-        <button
-          onClick={() => setIsFormOpen(true)}
-          className="px-4 py-2 bg-indigo-600 text-white rounded-md hover:bg-indigo-700"
-        >
-          Add Task
-        </button>
-      </div>
+  const handleDragEnd = async (event: DragEndEvent) => {
+    const { active, over } = event;
+    setActiveId(null);
 
-      {isFormOpen && (
-        <div className="fixed inset-0 bg-gray-600 bg-opacity-50 flex items-center justify-center">
-          <div className="bg-white p-4 rounded-lg w-full max-w-md">
+    if (!over) return;
+
+    const activeTask = tasks.find((task) => task.id === active.id);
+    if (!activeTask) return;
+
+    // Get the container (status column) where the task was dropped
+    const overId = over.id as string;
+    let newStatus: TaskStatus | undefined;
+
+    // Check if dropped on a task or directly in a status column
+    const overTask = tasks.find((task) => task.id === overId);
+    if (overTask) {
+      newStatus = overTask.status;
+    } else {
+      // If dropped directly in a status column, use that status
+      newStatus = overId as TaskStatus;
+    }
+
+    if (!newStatus) return;
+
+    // If task status has changed
+    if (activeTask.status !== newStatus) {
+      try {
+        await taskService.updateTask(activeTask.id, {
+          ...activeTask,
+          status: newStatus
+        });
+
+        // Update local state
+        setTasks(tasks.map(task => 
+          task.id === activeTask.id 
+            ? { ...task, status: newStatus }
+            : task
+        ));
+
+        toast({
+          title: 'Task status updated',
+          status: 'success',
+          duration: 2000,
+          isClosable: true,
+        });
+      } catch (error) {
+        toast({
+          title: 'Error updating task status',
+          status: 'error',
+          duration: 3000,
+          isClosable: true,
+        });
+        loadTasks(); // Reload tasks to ensure consistency
+      }
+    } else if (active.id !== over.id) {
+      // If tasks are in the same status column, handle reordering
+      const oldIndex = tasks.findIndex((task) => task.id === active.id);
+      const newIndex = tasks.findIndex((task) => task.id === over.id);
+
+      const newTasks = arrayMove(tasks, oldIndex, newIndex);
+      setTasks(newTasks);
+
+      try {
+        await taskService.updateTaskOrder(active.id as string, newIndex);
+      } catch (error) {
+        toast({
+          title: 'Error updating task order',
+          status: 'error',
+          duration: 3000,
+          isClosable: true,
+        });
+        loadTasks(); // Reload tasks to ensure consistency
+      }
+    }
+  };
+
+  const handleDragCancel = () => {
+    setActiveId(null);
+  };
+
+  const getTasksByStatus = (status: TaskStatus) => {
+    return tasks.filter((task) => task.status === status);
+  };
+
+  const statusColumns = [
+    { title: 'To Do', status: TaskStatus.TODO, color: '#C68EFD' },
+    { title: 'In Progress', status: TaskStatus.IN_PROGRESS, color: '#EB5B00' },
+    { title: 'Completed', status: TaskStatus.DONE, color: '#8AB2A6' },
+  ];
+
+  return (
+    <Box p={4}>
+      <Heading mb={10} fontSize="1.5rem" color={fontColor}>
+        Task Management
+      </Heading>
+
+      <DndContext
+        sensors={sensors}
+        collisionDetection={closestCorners}
+        onDragStart={handleDragStart}
+        onDragEnd={handleDragEnd}
+        onDragCancel={handleDragCancel}
+      >
+        <Grid templateColumns="repeat(3, 1fr)" gap={6}>
+          {statusColumns.map(({ title, status, color }) => (
+            <GridItem
+              key={status}
+              bg={light}
+              p={3}
+              borderRadius={5}
+              h="70vh"
+              id={status} // Add this to make the column droppable
+            >
+              <Heading mb={3} fontSize="1.2rem" textAlign="center" color={color}>
+                {title}
+              </Heading>
+              <Flex direction="column" gap={5} h="94%" justifyContent="space-between">
+                <Box flex="1" overflowY="auto">
+                  <SortableContext
+                    items={getTasksByStatus(status).map((task) => task.id)}
+                    strategy={verticalListSortingStrategy}
+                  >
+                    {getTasksByStatus(status).map((task) => (
+                      <DraggableTask
+                        key={task.id}
+                        task={task}
+                        onEdit={handleEdit}
+                        onDelete={handleDelete}
+                        dark={dark}
+                        fontColor={fontColor}
+                      />
+                    ))}
+                  </SortableContext>
+                </Box>
+                {status === TaskStatus.TODO && (
+                  <IconButton
+                    aria-label="Add task"
+                    icon={<AddIcon />}
+                    onClick={onOpen}
+                    colorScheme="teal"
+                    variant="outline"
+                  />
+                )}
+              </Flex>
+            </GridItem>
+          ))}
+        </Grid>
+
+        <DragOverlay>
+          {activeId ? (
+            <Box
+              bg={dark}
+              p={4}
+              borderRadius="md"
+              boxShadow="lg"
+              opacity={0.8}
+            >
+              {tasks.find((task) => task.id === activeId)?.title}
+            </Box>
+          ) : null}
+        </DragOverlay>
+      </DndContext>
+
+      <Modal isOpen={isOpen} onClose={onClose} size="xl">
+        <ModalOverlay />
+        <ModalContent>
+          <ModalHeader>{selectedTask ? 'Edit Task' : 'Create Task'}</ModalHeader>
+          <ModalCloseButton />
+          <ModalBody pb={6}>
             <TaskForm
               task={selectedTask || undefined}
               onSubmit={handleFormSubmit}
-              onCancel={handleFormCancel}
+              onCancel={onClose}
             />
-          </div>
-        </div>
-      )}
-
-      <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-3">
-        {tasks.map((task) => (
-          <div
-            key={task.id}
-            className="bg-white p-4 rounded-lg shadow hover:shadow-md transition-shadow"
-          >
-            <h3 className="text-lg font-semibold mb-2">{task.title}</h3>
-            <p className="text-gray-600 mb-2">{task.description}</p>
-            <div className="flex justify-between items-center mt-4">
-              <span className={`px-2 py-1 rounded text-sm ${
-                task.priority === 'HIGH'
-                  ? 'bg-red-100 text-red-800'
-                  : task.priority === 'MEDIUM'
-                  ? 'bg-yellow-100 text-yellow-800'
-                  : 'bg-green-100 text-green-800'
-              }`}>
-                {task.priority}
-              </span>
-              <div className="space-x-2">
-                <button
-                  onClick={() => handleEdit(task)}
-                  className="text-blue-600 hover:text-blue-800"
-                >
-                  Edit
-                </button>
-                <button
-                  onClick={() => handleDelete(task.id)}
-                  className="text-red-600 hover:text-red-800"
-                >
-                  Delete
-                </button>
-              </div>
-            </div>
-          </div>
-        ))}
-      </div>
-    </div>
+          </ModalBody>
+        </ModalContent>
+      </Modal>
+    </Box>
   );
 };

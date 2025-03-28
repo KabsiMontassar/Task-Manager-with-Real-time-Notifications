@@ -1,4 +1,16 @@
-import { IsString, IsNotEmpty, IsOptional, IsNumber } from 'class-validator';
+import { IsString, IsNotEmpty, IsOptional, IsNumber, IsEnum } from 'class-validator';
+
+export enum TaskStatus {
+  TODO = 'TODO',
+  IN_PROGRESS = 'IN_PROGRESS',
+  DONE = 'DONE'
+}
+
+export enum TaskPriority {
+  LOW = 'LOW',
+  MEDIUM = 'MEDIUM',
+  HIGH = 'HIGH'
+}
 
 export class CreateTaskDto {
   @IsString()
@@ -9,13 +21,21 @@ export class CreateTaskDto {
   @IsOptional()
   description?: string;
 
+  @IsEnum(TaskStatus)
+  @IsOptional()
+  status?: TaskStatus = TaskStatus.TODO;
+
+  @IsEnum(TaskPriority)
+  @IsOptional()
+  priority?: TaskPriority = TaskPriority.MEDIUM;
+
   @IsString()
   @IsNotEmpty()
   assignedTo: string;
 
-  @IsString()
+  @IsNumber()
   @IsOptional()
-  status?: string;
+  order?: number;
 }
 
 export class UpdateTaskDto {
@@ -27,21 +47,27 @@ export class UpdateTaskDto {
   @IsOptional()
   description?: string;
 
-  @IsString()
+  @IsEnum(TaskStatus)
   @IsOptional()
-  status?: string;
+  status?: TaskStatus;
+
+  @IsEnum(TaskPriority)
+  @IsOptional()
+  priority?: TaskPriority;
 
   @IsString()
   @IsOptional()
   assignedTo?: string;
+
+  @IsNumber()
+  @IsOptional()
+  order?: number;
 }
 
-
-
 export class UpdateStatusDto {
-  @IsString()
+  @IsEnum(TaskStatus)
   @IsNotEmpty()
-  status: string;
+  status: TaskStatus;
 }
 
 export class UpdateTaskOrderDto {
@@ -49,5 +75,3 @@ export class UpdateTaskOrderDto {
   @IsNotEmpty()
   order: number;
 }
-
-

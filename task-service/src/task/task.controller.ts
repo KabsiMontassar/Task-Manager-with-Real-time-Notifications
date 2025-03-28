@@ -8,8 +8,9 @@ export class TaskController {
   constructor(private readonly taskService: TaskService) {}
 
   @MessagePattern({ cmd: 'createTask' })
-  create(@Payload() { createTaskDto, userId }: { createTaskDto: CreateTaskDto; userId: string }) {
-    return this.taskService.create(createTaskDto, userId);
+  create(@Payload() payload: { createTaskDto: CreateTaskDto; userId: string }) {
+    console.log('Received payload:', payload); 
+    return this.taskService.create(payload.createTaskDto, payload.userId);
   }
 
   @MessagePattern({ cmd: 'findAllTasks' })
