@@ -105,6 +105,30 @@ class TaskService {
     }
   }
 
+
+  async updateTaskActive(id: string): Promise<Task> {
+    try {
+      const response = await api.put<Task>(API_ENDPOINTS.TASKS.ACTIVE(id));
+      return response.data;
+    } catch (error) {
+      if (axios.isAxiosError(error)) {
+        throw new Error(`Failed to update task status: ${error.message}`);
+      } else {
+        throw error;
+      }
+    }
+  }
+
+
+
+
+
+
+
+
+
+
+
   async updateTaskOrder(id: string, order: number): Promise<Task> {
     try {
       const response = await api.put<Task>(API_ENDPOINTS.TASKS.ORDER(id), { order : order });

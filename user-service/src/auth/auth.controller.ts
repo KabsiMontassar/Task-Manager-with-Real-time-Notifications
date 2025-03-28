@@ -29,7 +29,6 @@ export class AuthController {
         try {
             return await this.authService.register(createUserDto);
         } catch (error) {
-            // Rethrow the error to be handled by the API Gateway
             throw error;
         }
     }

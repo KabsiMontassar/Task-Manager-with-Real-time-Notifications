@@ -21,6 +21,7 @@ import { format } from "date-fns";
 interface TaskProps {
   task: TaskType;
   onEdit: (task: TaskType) => void;
+  onDelete: (id: string) => void;
   dark: string;
   light: string;
   fontColor: string;

@@ -18,24 +18,19 @@ export class AuthService {
         try {
             const { email, password, role } = createUserDto;
 
-            // Check if user exists
             const existingUser = await this.userModel.findOne({ email });
             if (existingUser) {
                 throw new ConflictException('User with this email already exists');
             }
 
-            // Validate role
             if (role && !Object.values(UserRole).includes(role)) {
                 throw new BadRequestException('Invalid role specified');
             }
 
-            // Set default role if not provided
             const userRole = role || UserRole.EMPLOYEE;
 
-            // Hash password
             const hashedPassword = await bcrypt.hash(password, keys.bcryptSaltRounds);
 
-            // Create new user
             const newUser = await this.userModel.create({
                 ...createUserDto,
                 role: userRole,
@@ -43,14 +38,12 @@ export class AuthService {
                 isActive: true
             });
 
-            // Generate JWT
             const token = this.jwtService.sign({ 
                 userId: newUser._id,
                 email: newUser.email,
                 role: newUser.role 
             });
 
-            // Return user data without password
             const { password: _, ...userData } = newUser.toObject();
 
             return { 
@@ -68,10 +61,8 @@ export class AuthService {
     async login(loginUserDto: LoginUserDto): Promise<{ token: string }> {
         const { email, password } = loginUserDto;
         
-        // Find user and validate password
         const user = await this.validateUser(email, password);
         
-        // Generate JWT
         const token = this.jwtService.sign({
             userId: user._id,
             email: user.email,

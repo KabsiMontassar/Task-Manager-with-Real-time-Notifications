@@ -3,13 +3,16 @@ import { UserService } from './user.service';
 import { JwtAuthGuard } from '../auth/jwt-auth.guard';
 import { Request } from 'express';
 import { Req, Body } from '@nestjs/common';
+import { ClientProxy } from '@nestjs/microservices';
+import { Inject } from '@nestjs/common';
 
 @Controller('users')
 @UseGuards(JwtAuthGuard)
 export class UserController {
-  constructor(private readonly userService: UserService) {}
-
- 
+  constructor(
+    private readonly userService: UserService,
+    @Inject('USER_SERVICE') private readonly userClient: ClientProxy,
+  ) {}
 
   @Get('me')
   async getProfile(@Req() req: Request) {
@@ -21,6 +24,19 @@ export class UserController {
     const result = await this.userService.findById(req.user.userId);
     console.log('Profile result:', result);
     return result;
+  }
+
+  @Get('all')
+  async getAllUsers() {
+    try {
+      console.log('Fetching all users');
+      const result = await this.userClient.send({ cmd: 'findAllUsers' }, {}).toPromise();
+      console.log('All users result:', result);
+      return result;
+    } catch (error) {
+      console.error('Error fetching all users:', error);
+      throw error;
+    }
   }
 
   @Get('me/:userId')
@@ -94,6 +110,4 @@ export class UserController {
       throw error;
     }
   }
-
-
 }

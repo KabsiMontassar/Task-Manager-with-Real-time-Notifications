@@ -5,7 +5,7 @@ import { userService } from '../../services/user.service';
 import {
   Flex, IconButton, Button, Avatar, Text, Box,
   Drawer, DrawerBody, VStack, DrawerOverlay,
-  DrawerContent, useDisclosure
+  DrawerContent, useDisclosure, Tooltip
 } from '@chakra-ui/react';
 import { NotAllowedIcon } from '@chakra-ui/icons';
 import { User } from '../../types/user';
@@ -26,7 +26,7 @@ type BannerType = "Breezy" | "Particles" | "Pattern" | "Hexagon";
 const HomePage = () => {
   const navigate = useNavigate();
   const [user, setUser] = useState<User | null>(null);
-  //const [users, setUsers] = useState<User[]>([]);
+  const [users, setUsers] = useState<User[]>([]);
   const [loading, setLoading] = useState(true);
 
   const { isOpen: isDrawerOpen, onOpen: onDrawerOpen, onClose: onDrawerClose } = useDisclosure();
@@ -43,8 +43,9 @@ const HomePage = () => {
         const userData = await userService.getCurrentUser();
         setUser(userData);
 
-        // const allUsers = await userService.getAllUsers();
-        // setUsers(allUsers);
+        const allUsers = await userService.getAllUsers();
+
+        setUsers(allUsers);
       } catch (error) {
         console.error('Failed to fetch user data:', error);
         authService.logout();
@@ -96,15 +97,38 @@ const HomePage = () => {
               onClick={handleLogout} icon={<NotAllowedIcon />} />
           </Flex>
 
-          <Flex style={{ display: 'flex', alignItems: 'center', padding: '3px', gap: '6px' }}>
-            <Avatar bg='green.500' name={user?.firstName + ' ' + user?.lastName} />
-            <Text color={fontColor}>{Capitalize(user?.firstName) + ' ' + Capitalize(user?.lastName)} ( Me ) </Text>
-          </Flex>
+
+
+          <Box userSelect={"none"} gap={6} display={"flex"} flexDirection={"column"} overflowY={"auto"}>
+
+            {users.map((test) => (
+              <Tooltip userSelect={"none"} label={test.email} aria-label='A tooltip'>
+                <Flex key={test.email} style={{ display: 'flex', alignItems: 'center', padding: '3px', gap: '6px' }}>
+                  <Avatar name={test?.firstName + ' ' + test?.lastName} />
+                  <Text color={fontColor}>
+                    {Capitalize(test?.firstName) + ' ' + Capitalize(test?.lastName)}
+                    {test?.email === user.email ? ' ( Me )' : ''}
+                  </Text>
+                </Flex>
+              </Tooltip>
+            ))}
+
+
+
+          </Box>
+
+
+
+
+
+
+
+
         </Flex>
       )}
 
       <Box flex={1} p={20} overflowY={"auto"}>
-        <Board   light={light} dark={dark} fontColor={fontColor} />
+        <Board light={light} dark={dark} fontColor={fontColor} />
       </Box>
 
       <ThemeSelector setTheme={setTheme} />
@@ -121,7 +145,7 @@ const HomePage = () => {
                 {Banner === "Particles" && <Particles />}
                 {Banner === "Pattern" && <Pattern />}
                 {Banner === "Hexagon" && <Hexagon />}
-                
+
                 <Box ml={5} bg={light} position="absolute" top="22vh" p={2} borderRadius="full">
                   <Avatar size="2xl" name="Dan Abrahmov" src="https://bit.ly/dan-abramov" />
                 </Box>

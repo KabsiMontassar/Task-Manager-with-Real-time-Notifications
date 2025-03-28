@@ -19,7 +19,7 @@ export const userService = {
 
   getAllUsers: async (): Promise<User[]> => {
     try {
-      const response = await api.get(API_ENDPOINTS.USERS.BASE);
+      const response = await api.get(`${API_ENDPOINTS.USERS.BASE}/all`);
       return response.data;
     } catch (error: any) {
       console.error('Error fetching users:', error.response?.data || error.message);

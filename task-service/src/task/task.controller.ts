@@ -38,6 +38,12 @@ export class TaskController {
     return this.taskService.updateTaskOrder(id, newOrder);
   }
 
+
+  
+  @MessagePattern({ cmd: 'updateTaskActive' })
+  updateActive(@Payload() { id }: { id: string }) {
+    return this.taskService.updateTaskActive(id);
+  }
   @MessagePattern({ cmd: 'updateTaskStatus' })
   updateStatus(@Payload() { id, status }: { id: string; status: string }) {
     return this.taskService.updateTaskStatus(id, status);

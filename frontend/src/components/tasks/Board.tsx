@@ -22,6 +22,7 @@ import {
   DndContext,
   closestCorners,
   DragEndEvent,
+  DragStartEvent,
 } from "@dnd-kit/core";
 import {
   arrayMove,
@@ -101,9 +102,34 @@ export const Board: React.FC<BoardProps> = ({ light, dark, fontColor }) => {
     }
   };
 
+  const handleDragStart = (event: DragStartEvent) => {
+    const { active } = event;
+    const task = Object.values(boardData)
+      .flat()
+      .find((t) => t.id === active.id);
+    if (task) {
+      console.log("Task data for drag start:", task);
+    }
+  };
+
   const handleDragEnd = async (event: DragEndEvent) => {
     const { active, over } = event;
     if (!over) return;
+
+    if (over.id === "delete-zone") {
+
+      const confirmDelete = window.confirm("Are you sure you want to delete this task?");
+      if (!confirmDelete) return;
+      await handleDeleteTask(active.id as string); 
+      return;
+    }
+
+    if (over.id === "archive-zone") {
+      const confirmArchive = window.confirm("Are you sure you want to archive this task?");
+      if (!confirmArchive) return;
+      await handleArchiveTask(active.id as string);
+      return;
+    }
 
     const activeId = active.id as string;
     const overId = over.id as string;
@@ -242,7 +268,7 @@ export const Board: React.FC<BoardProps> = ({ light, dark, fontColor }) => {
 
   const handleArchiveTask = async (id: string) => {
     try {
-      await taskService.updateTask(id, { active: false });
+      await taskService.updateTaskActive(id);
       toast({
         title: "Task archived",
         status: "success",
@@ -331,6 +357,7 @@ export const Board: React.FC<BoardProps> = ({ light, dark, fontColor }) => {
       </Heading>
       <DndContext
         collisionDetection={closestCorners}
+        onDragStart={handleDragStart}
         onDragEnd={handleDragEnd}
       >
         <Flex
