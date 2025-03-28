@@ -13,10 +13,13 @@ import { User } from '../../types/user';
 import { Profile } from '../profile/Profile';
 import Breezycherryblossoms from '../design/Breezycherrybossoms';
 import Particles from '../design/particles';
-
+import Pattern from '../design/Pattern';
+import Hexagon from '../design/hexagon';
 import ThemeSelector from '../ThemeSelector';
+import BannerSelector from '../BannerSelector';
 import { themes } from '../design/Themes';
 type ThemeType = 'Light' | 'Ash' | 'Dark' | 'Oxyn';
+type BannerType = "Breezy" | "Particles" | "Pattern" | "Hexagon";
 
 const HomePage = () => {
   const navigate = useNavigate();
@@ -27,7 +30,7 @@ const HomePage = () => {
   const [dark, setDark] = useState<string>(themes[theme].dark || '#28282D');
   const [light, setLight] = useState<string>(themes[theme].light || '#333339');
   const [fontColor, setFontColor] = useState<string>('#D8D8DB');
-
+  const [Banner, setBanner] = useState<BannerType>("Particles");
   useEffect(() => {
     const fetchUserData = async () => {
       try {
@@ -44,10 +47,11 @@ const HomePage = () => {
 
     fetchUserData();
 
-    // Apply theme
     const storedTheme = localStorage.getItem('theme') as ThemeType;
-    setTheme(storedTheme || 'Light');
+    const storedBanner = localStorage.getItem('Banner') as BannerType;
+    setBanner(storedBanner || 'Particles');
 
+    setTheme(storedTheme || 'Light');
     setDark(themes[theme]?.dark || '#28282D');
     setLight(themes[theme]?.light || '#333339');
     setFontColor(themes[theme]?.fontColor || '#D8D8DB');
@@ -106,8 +110,15 @@ const HomePage = () => {
           <DrawerBody p={0} bg={light}>
             <VStack gap={0} align='stretch'>
               <Box w={"100%"} h={"30vh"} position={"relative"} bg={dark}>
-                <Breezycherryblossoms />
-                {/* <Particles /> */}
+
+                
+                <BannerSelector setBanner={setBanner} />
+
+
+                {Banner === "Breezy" && <Breezycherryblossoms />}
+                {Banner === "Particles" && <Particles />}
+                {Banner === "Pattern" && <Pattern />}
+                {Banner === "Hexagon" && <Hexagon />}
                 <Box ml={5} bg={light} position="absolute" top="22vh" p={2} borderRadius="full">
                   <Avatar size="2xl" name="Dan Abrahmov" src="https://bit.ly/dan-abramov" />
                 </Box>
