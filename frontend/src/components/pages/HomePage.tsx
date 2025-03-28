@@ -14,14 +14,12 @@ import Breezycherryblossoms from '../design/Breezycherrybossoms';
 import Particles from '../design/particles';
 import Pattern from '../design/Pattern';
 import Hexagon from '../design/Hexagon';
-import { useTheme } from '../../context/ThemeContext';
 import ThemeSelector from '../selectors/ThemeSelector';
 import BannerSelector from '../selectors/BannerSelector';
-import { themes } from '../design/Themes';
+import {Chat} from '../chat/Chat';
 
 import Board from '../tasks/Board';
 
-type ThemeType = 'Light' | 'Ash' | 'Dark' | 'Oxyn';
 type BannerType = "Breezy" | "Particles" | "Pattern" | "Hexagon";
 
 const HomePage = () => {
@@ -32,7 +30,6 @@ const HomePage = () => {
 
   const { isOpen: isDrawerOpen, onOpen: onDrawerOpen, onClose: onDrawerClose } = useDisclosure();
 
-  const { theme } = useTheme();
   const [Banner, setBanner] = useState<BannerType>("Particles");
 
   useEffect(() => {
@@ -110,7 +107,8 @@ const HomePage = () => {
         </Flex>
       )}
       <Box flex={1} p={20} overflowY="auto">
-        <Board light="var(--light-color)" dark="var(--dark-color)" fontColor="var(--font-color)" />
+        <Board  fontColor="var(--font-color)" />
+        <Chat />
       </Box>
       <ThemeSelector />
 
@@ -130,7 +128,7 @@ const HomePage = () => {
                 </Box>
               </Box>
               <Box>
-                {user && <Profile user={user} light="var(--light-color)" dark="var(--dark-color)" fontColor="var(--font-color)" onSave={handleProfileSave} />}
+                {user && <Profile user={user}  fontColor="var(--font-color)" onSave={handleProfileSave} />}
               </Box>
             </VStack>
           </DrawerBody>

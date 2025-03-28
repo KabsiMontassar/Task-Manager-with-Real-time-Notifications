@@ -1,9 +1,11 @@
-import { Module } from '@nestjs/common';
+import { Module, OnModuleInit } from '@nestjs/common';
 import { ConfigModule } from '@nestjs/config';
 import { ClientsModule, Transport } from '@nestjs/microservices';
 import { AuthModule } from './auth/auth.module';
 import { TaskModule } from './task/task.module';
 import { UserModule } from './user/user.module';
+import { IoAdapter } from '@nestjs/platform-socket.io';
+import { ChatGateway } from './chat/chat.gateway';
 
 @Module({
   imports: [
@@ -24,5 +26,11 @@ import { UserModule } from './user/user.module';
     TaskModule,
     UserModule,
   ],
+  providers: [ChatGateway], // Register the WebSocket gateway
 })
-export class AppModule {}
+export class AppModule implements OnModuleInit {
+  onModuleInit() {
+    const ioAdapter = new IoAdapter();
+    ioAdapter.createIOServer(3000); 
+  }
+}

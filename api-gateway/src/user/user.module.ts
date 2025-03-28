@@ -13,7 +13,7 @@ import { AuthModule } from '../auth/auth.module';
         transport: Transport.TCP,
         options: {
           host: 'localhost',
-          port: 3001, 
+          port: 3001, // Updated to match user-service microservice port
         },
       },
     ]),

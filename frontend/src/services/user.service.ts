@@ -52,7 +52,7 @@ export const userService = {
       const user = localStorage.getItem('user');
       if (!user) throw new Error('No user found');
       
-      const { _id } = JSON.parse(user);
+      const { _id } = JSON.parse(user); // Fix: Use 'id' instead of '_id'
       const response = await api.put(API_ENDPOINTS.USERS.BY_ID(_id), data);
       
       // Update stored user data

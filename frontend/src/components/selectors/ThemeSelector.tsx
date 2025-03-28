@@ -8,10 +8,6 @@ const ThemeSelector = () => {
   type ThemeType = 'Light' | 'Ash' | 'Dark' | 'Oxyn';
   const themesMain: ThemeType[] = ['Light', 'Ash', 'Dark', 'Oxyn'];
 
-
-
- 
-
   return (
     <Box p={3} position="absolute" top={5} right={0} display="flex" gap={3}>
       {themesMain.map((themeOption) => (

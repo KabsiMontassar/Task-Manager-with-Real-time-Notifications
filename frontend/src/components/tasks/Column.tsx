@@ -24,8 +24,7 @@ interface ColumnProps {
   onAddTask: (status: TaskStatus) => void;
   onEditTask: (task: TaskType) => void;
   onDeleteTask: (id: string) => void;
-  dark: string;
-  light: string;
+ 
   fontColor: string;
 }
 
@@ -35,8 +34,7 @@ const Column: React.FC<ColumnProps> = ({
   onAddTask,
   onEditTask,
   onDeleteTask,
-  dark,
-  light,
+
   fontColor
 }) => {
   const { setNodeRef } = useDroppable({ id: status });
@@ -50,7 +48,7 @@ const Column: React.FC<ColumnProps> = ({
 
       mx={2}
       p={4}
-      bg={dark}
+      bg="var(--dark-color)"
       borderRadius="lg"
       boxShadow="md"
       
@@ -97,8 +95,7 @@ const Column: React.FC<ColumnProps> = ({
           {tasks.map((task) => (
             <Task
 
-              dark={dark}
-              light={light}
+            
               fontColor={fontColor}
 
 
@@ -113,7 +110,7 @@ const Column: React.FC<ColumnProps> = ({
               p={4}
               textAlign="center"
               color={fontColor}
-              bg={light}
+              bg="var(--light-color)"
               
               boxShadow="sm"
               borderRadius="md"

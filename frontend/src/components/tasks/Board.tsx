@@ -53,12 +53,11 @@ export const statusLabels: Record<TaskStatus, string> = {
 };
 
 export interface BoardProps {
-  light: string;
-  dark: string;
+ 
   fontColor: string;
 }
 
-export const Board: React.FC<BoardProps> = ({ light, dark, fontColor }) => {
+export const Board: React.FC<BoardProps> = ({  fontColor }) => {
   const [boardData, setBoardData] = useState<BoardData>({
     TODO: [],
     IN_PROGRESS: [],
@@ -76,12 +75,13 @@ export const Board: React.FC<BoardProps> = ({ light, dark, fontColor }) => {
   const fetchTasks = async () => {
     try {
       const tasks = await taskService.getAllTasks();
-      const groupedTasks = tasks.reduce((acc, task) => {
+      const activeonly = tasks.filter(task => task.active == true);
+      const groupedTasks = activeonly.reduce((acc, task) => {
         acc[task.status] = [...(acc[task.status] || []), task];
         return acc;
       }, { TODO: [], IN_PROGRESS: [], DONE: [] } as BoardData);
 
-      setBoardData(groupedTasks); // Assume backend returns sorted tasks
+      setBoardData(groupedTasks); 
     } catch (error) {
       toast({
         title: "Error fetching tasks",
@@ -114,6 +114,8 @@ export const Board: React.FC<BoardProps> = ({ light, dark, fontColor }) => {
       const confirmDelete = window.confirm("Are you sure you want to delete this task?");
       if (!confirmDelete) return;
       await handleDeleteTask(active.id as string); 
+
+
       return;
     }
 
@@ -360,8 +362,7 @@ export const Board: React.FC<BoardProps> = ({ light, dark, fontColor }) => {
         >
           {statusOrder.map((status) => (
             <Column
-              dark={dark}
-              light={light}
+            
               fontColor={fontColor}
 
 
