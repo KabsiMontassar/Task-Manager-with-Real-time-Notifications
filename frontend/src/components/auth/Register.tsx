@@ -1,15 +1,27 @@
 import { useState } from 'react';
-import { useNavigate, Link } from 'react-router-dom';
+import { useNavigate, Link as RouterLink } from 'react-router-dom';
 import { authService } from '../../services/auth.service';
-import './Auth.css';
+import {
+  Box,
+  Button,
+  FormControl,
+  FormLabel,
+  Input,
+  Alert,
+  AlertIcon,
+  Spinner,
+  Text,
+  Link,
+  VStack
+} from '@chakra-ui/react';
 
 const Register = () => {
   const navigate = useNavigate();
   const [formData, setFormData] = useState({
-    name: '',
+    firstName: '',
+    lastName: '',
     email: '',
-    password: '',
-    role: 'EMPLOYEE' as 'ADMIN' | 'MANAGER' | 'EMPLOYEE'
+    password: ''
   });
   const [error, setError] = useState('');
   const [loading, setLoading] = useState(false);
@@ -29,6 +41,7 @@ const Register = () => {
 
     try {
       await authService.register(formData);
+      
       navigate('/');
     } catch (err: any) {
       setError(err.response?.data?.message || 'Failed to register');
@@ -38,67 +51,81 @@ const Register = () => {
   };
 
   return (
-    <div className="auth-container">
-      <div className="auth-box">
-        <h2>Register</h2>
-        {error && <div className="error-message">{error}</div>}
+    <Box display="flex" justifyContent="center" alignItems="center" minH="100vh" bg="gray.100">
+      <Box bg="white" p={6} boxShadow="lg" borderRadius="md" width="100%" maxW="400px">
+        <Text fontSize="2xl" fontWeight="bold" textAlign="center" mb={4}>
+          Register
+        </Text>
+
+        {error && (
+          <Alert status="error" mb={4}>
+            <AlertIcon />
+            {error}
+          </Alert>
+        )}
+
         <form onSubmit={handleSubmit}>
-          <div className="form-group">
-            <label htmlFor="name">Full Name</label>
-            <input
-              type="text"
-              id="name"
-              name="name"
-              value={formData.name}
-              onChange={handleChange}
-              required
-            />
-          </div>
-          <div className="form-group">
-            <label htmlFor="email">Email</label>
-            <input
-              type="email"
-              id="email"
-              name="email"
-              value={formData.email}
-              onChange={handleChange}
-              required
-            />
-          </div>
-          <div className="form-group">
-            <label htmlFor="password">Password</label>
-            <input
-              type="password"
-              id="password"
-              name="password"
-              value={formData.password}
-              onChange={handleChange}
-              required
-            />
-          </div>
-          <div className="form-group">
-            <label htmlFor="role">Role</label>
-            <select
-              id="role"
-              name="role"
-              value={formData.role}
-              onChange={handleChange}
-              required
-            >
-              <option value="EMPLOYEE">Employee</option>
-              <option value="MANAGER">Manager</option>
-              <option value="ADMIN">Admin</option>
-            </select>
-          </div>
-          <button type="submit" className="submit-button" disabled={loading}>
-            {loading ? 'Registering...' : 'Register'}
-          </button>
+          <VStack spacing={4}>
+            <FormControl isRequired>
+              <FormLabel>First Name</FormLabel>
+              <Input
+                type="text"
+                name="firstName"
+                value={formData.firstName}
+                onChange={handleChange}
+                placeholder="Enter your first name"
+              />
+            </FormControl>
+
+            <FormControl isRequired>
+              <FormLabel>Last Name</FormLabel>
+              <Input
+                type="text"
+                name="lastName"
+                value={formData.lastName}
+                onChange={handleChange}
+                placeholder="Enter your last name"
+              />
+            </FormControl>
+
+            <FormControl isRequired>
+              <FormLabel>Email</FormLabel>
+              <Input
+                type="email"
+                name="email"
+                value={formData.email}
+                onChange={handleChange}
+                placeholder="Enter your email"
+              />
+            </FormControl>
+
+            <FormControl isRequired>
+              <FormLabel>Password</FormLabel>
+              <Input
+                type="password"
+                name="password"
+                value={formData.password}
+                onChange={handleChange}
+                placeholder="Enter your password"
+              />
+            </FormControl>
+
+       
+
+            <Button type="submit" colorScheme="teal" width="100%" disabled={loading}>
+              {loading ? <Spinner size="sm" /> : 'Register'}
+            </Button>
+          </VStack>
         </form>
-        <p className="auth-link">
-          Already have an account? <Link to="/login">Login</Link>
-        </p>
-      </div>
-    </div>
+
+        <Text textAlign="center" mt={4}>
+          Already have an account?{' '}
+          <Link as={RouterLink} to="/login" color="teal.500">
+            Login
+          </Link>
+        </Text>
+      </Box>
+    </Box>
   );
 };
 

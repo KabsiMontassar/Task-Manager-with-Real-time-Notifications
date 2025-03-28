@@ -30,4 +30,20 @@ export class UserService {
   async getProfile(userId: string) {
     return firstValueFrom(this.userServiceClient.send('user_get_profile', { userId }));
   }
+
+  async update(id: string, data: any) {
+    return firstValueFrom(this.userServiceClient.send('user_update', { id, data }));
+  }
+
+  async updatePassword(id: string, data: any) {
+    try {
+      const response = await firstValueFrom(
+        this.userServiceClient.send('user_update_password', { id, data }).pipe()
+      );
+      return response; // Return the complete response from microservice
+    } catch (error) {
+      console.error('Error updating password in microservice:', error);
+      throw new Error('Error updating password');
+    }
+  }
 }

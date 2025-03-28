@@ -1,20 +1,11 @@
 import api from './api.service';
 import { API_ENDPOINTS } from '../config/api.config';
-
-interface UserProfile {
-  id: string;
-  firstName: string;
-  lastName: string;
-  email: string;
-  role: string;
-}
+import { User } from '../types/user';
 
 export const userService = {
-  getProfile: async (): Promise<UserProfile> => {
+  getCurrentUser: async (): Promise<User> => {
     try {
-      console.log('Fetching user profile');
       const response = await api.get(API_ENDPOINTS.USERS.ME);
-      console.log('Profile response:', response.data);
       
       // Update stored user data with latest from server
       localStorage.setItem('user', JSON.stringify(response.data));
@@ -26,13 +17,13 @@ export const userService = {
     }
   },
 
-  updateProfile: async (data: Partial<UserProfile>): Promise<UserProfile> => {
+  updateProfile: async (data: Partial<User>): Promise<User> => {
     try {
       const user = localStorage.getItem('user');
       if (!user) throw new Error('No user found');
       
-      const { id } = JSON.parse(user);
-      const response = await api.put(API_ENDPOINTS.USERS.BY_ID(id), data);
+      const { _id } = JSON.parse(user);
+      const response = await api.put(API_ENDPOINTS.USERS.BY_ID(_id), data);
       
       // Update stored user data
       localStorage.setItem('user', JSON.stringify(response.data));
@@ -40,6 +31,22 @@ export const userService = {
       return response.data;
     } catch (error: any) {
       console.error('Error updating profile:', error.response?.data || error.message);
+      throw error;
+    }
+  },
+
+  updatePassword: async (currentPassword: string, newPassword: string): Promise<void> => {
+    try {
+      const user = localStorage.getItem('user');
+      if (!user) throw new Error('No user found');
+      
+      const { _id } = JSON.parse(user);
+      await api.put(API_ENDPOINTS.USERS.PASSWORD(_id), {
+        currentPassword,
+        newPassword
+      });
+    } catch (error: any) {
+      console.error('Error updating password:', error.response?.data || error.message);
       throw error;
     }
   }

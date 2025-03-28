@@ -8,10 +8,10 @@ interface LoginCredentials {
 }
 
 interface RegisterData {
-  name: string;
+  firstName: string;
+  lastName: string;
   email: string;
   password: string;
-  role: 'ADMIN' | 'MANAGER' | 'EMPLOYEE';
 }
 
 interface User {
@@ -53,7 +53,10 @@ export const authService = {
 
   register: async (data: RegisterData): Promise<AuthResponse> => {
     try {
+      console.log('Sending registration request with:', data);
       const response = await api.post<AuthResponse>(API_ENDPOINTS.AUTH.REGISTER, data);
+      console.log('Received registration response:', response.data);
+
       const { access_token, user } = response.data;
 
       if (access_token && user) {

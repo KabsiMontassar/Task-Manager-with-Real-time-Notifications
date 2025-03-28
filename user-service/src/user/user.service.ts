@@ -3,6 +3,8 @@ import { InjectModel } from '@nestjs/mongoose';
 import { Model, isValidObjectId } from 'mongoose';
 import { User, UserDocument } from '../schemas/user.schema';
 import { UpdateUserDto } from '../dto/user.dto';
+import * as bcrypt from 'bcrypt';
+import { keys } from '../config/keys';
 
 @Injectable()
 export class UserService {
@@ -65,5 +67,28 @@ export class UserService {
         if (result.deletedCount === 0) {
             throw new NotFoundException('User not found');
         }
+    }
+
+    async updatePassword(id: string, data: any): Promise<{ success: boolean, message: string }> {
+        if (!isValidObjectId(id)) {
+            throw new Error('Invalid user ID format');
+        }
+
+        const user = await this.userModel.findById(id);
+        if (!user) {
+            throw new NotFoundException('User not found');
+        }
+
+
+        const isPasswordValid = await bcrypt.compare(data.currentPassword, user.password);
+        if (!isPasswordValid) {
+            throw new Error('Invalid current password');
+        }
+
+        const hashedPassword = await bcrypt.hash(data.newPassword, keys.bcryptSaltRounds);
+        user.password =  hashedPassword;
+        await user.save();
+
+        return { success: true, message: 'Password updated successfully' };
     }
 }

@@ -1,0 +1,15 @@
+* { 
+    margin: 0; 
+    padding: 0;
+    box-sizing: border-box; 
+  }
+  
+  body { 
+    overflow: hidden; 
+    background: linear-gradient(to right, #1a1a2e, #16213e, #0f3460); 
+  }
+  
+  .particles { 
+    display: block; 
+    overflow:hidden;
+  }

@@ -5,4 +5,3 @@ export enum TaskStatus {
   COMPLETED = 'completed',
 }
 export * from './user';
-export * from './comment';

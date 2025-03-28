@@ -5,6 +5,7 @@ import Login from './components/auth/Login';
 import Register from './components/auth/Register';
 import ProtectedRoute from './components/auth/ProtectedRoute';
 import './App.css';
+
 const queryClient = new QueryClient({
   defaultOptions: {
     queries: {
@@ -25,7 +26,8 @@ function App() {
             <ProtectedRoute>
               <HomePage />
             </ProtectedRoute>
-          } />
+          }>
+          </Route>
         </Routes>
       </BrowserRouter>
     </QueryClientProvider>

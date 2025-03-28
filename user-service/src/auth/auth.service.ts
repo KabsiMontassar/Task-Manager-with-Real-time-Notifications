@@ -1,9 +1,9 @@
-import { Injectable, UnauthorizedException } from '@nestjs/common';
+import { Injectable, UnauthorizedException, BadRequestException, ConflictException } from '@nestjs/common';
 import { JwtService } from '@nestjs/jwt';
 import { InjectModel } from '@nestjs/mongoose';
 import { Model } from 'mongoose';
 import * as bcrypt from 'bcrypt';
-import { User, UserDocument } from '../schemas/user.schema';
+import { User, UserDocument, UserRole } from '../schemas/user.schema';
 import { CreateUserDto, LoginUserDto } from '../dto/user.dto';
 import { keys } from '../config/keys';
 
@@ -14,32 +14,55 @@ export class AuthService {
         private jwtService: JwtService,
     ) {}
 
-    async register(createUserDto: CreateUserDto): Promise<{ token: string }> {
-        const { email, password } = createUserDto;
+    async register(createUserDto: CreateUserDto): Promise<{ token: string; user: Partial<UserDocument> }> {
+        try {
+            const { email, password, role } = createUserDto;
 
-        // Check if user exists
-        const existingUser = await this.userModel.findOne({ email });
-        if (existingUser) {
-            throw new UnauthorizedException('User already exists');
+            // Check if user exists
+            const existingUser = await this.userModel.findOne({ email });
+            if (existingUser) {
+                throw new ConflictException('User with this email already exists');
+            }
+
+            // Validate role
+            if (role && !Object.values(UserRole).includes(role)) {
+                throw new BadRequestException('Invalid role specified');
+            }
+
+            // Set default role if not provided
+            const userRole = role || UserRole.EMPLOYEE;
+
+            // Hash password
+            const hashedPassword = await bcrypt.hash(password, keys.bcryptSaltRounds);
+
+            // Create new user
+            const newUser = await this.userModel.create({
+                ...createUserDto,
+                role: userRole,
+                password: hashedPassword,
+                isActive: true
+            });
+
+            // Generate JWT
+            const token = this.jwtService.sign({ 
+                userId: newUser._id,
+                email: newUser.email,
+                role: newUser.role 
+            });
+
+            // Return user data without password
+            const { password: _, ...userData } = newUser.toObject();
+
+            return { 
+                token,
+                user: userData
+            };
+        } catch (error) {
+            if (error instanceof ConflictException || error instanceof BadRequestException) {
+                throw error;
+            }
+            throw new BadRequestException('Failed to register user: ' + error.message);
         }
-
-        // Hash password
-        const hashedPassword = await bcrypt.hash(password, keys.bcryptSaltRounds);
-
-        // Create new user
-        const newUser = await this.userModel.create({
-            ...createUserDto,
-            password: hashedPassword,
-        });
-
-        // Generate JWT
-        const token = this.jwtService.sign({ 
-            userId: newUser._id,
-            email: newUser.email,
-            role: newUser.role 
-        });
-
-        return { token };
     }
 
     async login(loginUserDto: LoginUserDto): Promise<{ token: string }> {

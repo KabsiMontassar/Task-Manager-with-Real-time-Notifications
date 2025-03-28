@@ -11,11 +11,9 @@ const api = axios.create({
 // Request interceptor
 api.interceptors.request.use(
   (config) => {
-    console.log('Making request to:', config.url);
     const token = localStorage.getItem('token');
     if (token) {
       config.headers.Authorization = `Bearer ${token}`;
-      console.log('Added token to request');
     }
     return config;
   },
@@ -28,8 +26,6 @@ api.interceptors.request.use(
 // Response interceptor
 api.interceptors.response.use(
   (response) => {
-    console.log('Received response from:', response.config.url);
-    console.log('Response data:', response.data);
     return response;
   },
   async (error) => {
@@ -41,7 +37,6 @@ api.interceptors.response.use(
     });
 
     if (error.response?.status === 401) {
-      console.log('Unauthorized request, clearing token');
       localStorage.removeItem('token');
       localStorage.removeItem('user');
       window.location.href = '/login';
