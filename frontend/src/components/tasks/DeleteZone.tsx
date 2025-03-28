@@ -44,11 +44,6 @@ export const DeleteZone: React.FC<DeleteZoneProps> = ({ onDelete }) => {
       border="2px dashed"
       borderColor="red.500"
       textAlign="center"
-      onClick={() => {
-        if (isOver && setNodeRef.current?.data?.current?.active) {
-          handleDrop(setNodeRef.current.data.current.active);
-        }
-      }}
     >
       <Text fontWeight="bold" color="red.500">
         Drop here to delete task

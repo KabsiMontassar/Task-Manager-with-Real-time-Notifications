@@ -44,11 +44,6 @@ export const ArchiveZone: React.FC<ArchiveZoneProps> = ({ onArchive }) => {
       border="2px dashed"
       borderColor="orange.500"
       textAlign="center"
-      onClick={() => {
-        if (isOver && setNodeRef.current?.data?.current?.active) {
-          handleDrop(setNodeRef.current.data.current.active);
-        }
-      }}
     >
       <Text fontWeight="bold" color="orange.500">
         Drop here to archive task

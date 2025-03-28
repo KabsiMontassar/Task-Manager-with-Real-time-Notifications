@@ -31,6 +31,8 @@ import { Task as TaskType, TaskStatus, TaskPriority } from "../../types/task";
 import Column from "./Column";
 import DatePicker from "react-datepicker";
 import "react-datepicker/dist/react-datepicker.css";
+import { ArchiveZone } from "./ArchiveZone";
+import { DeleteZone } from "./DeleteZone";
 
 interface BoardData {
   [status: string]: TaskType[];
@@ -240,6 +242,28 @@ export const Board: React.FC<BoardProps> = ({ light, dark, fontColor }) => {
     }
   };
 
+  const handleArchiveTask = async (id: string) => {
+    try {
+      await taskService.updateTask(id, { active: false });
+      toast({
+        title: "Task archived",
+        status: "success",
+        duration: 3000,
+        isClosable: true,
+      });
+      fetchTasks();
+    } catch (error) {
+      console.error("Failed to archive task:", error);
+      toast({
+        title: "Error archiving task",
+        description: error instanceof Error ? error.message : "An error occurred",
+        status: "error",
+        duration: 5000,
+        isClosable: true,
+      });
+    }
+  };
+
   const handleSaveTask = async () => {
     if (!currentTask?.title) {
       toast({
@@ -333,6 +357,10 @@ export const Board: React.FC<BoardProps> = ({ light, dark, fontColor }) => {
               onDeleteTask={handleDeleteTask}
             />
           ))}
+        </Flex>
+        <Flex direction="row" justify="space-around" mt={6}>
+          <ArchiveZone onArchive={handleArchiveTask} />
+          <DeleteZone onDelete={handleDeleteTask} />
         </Flex>
       </DndContext>
 
