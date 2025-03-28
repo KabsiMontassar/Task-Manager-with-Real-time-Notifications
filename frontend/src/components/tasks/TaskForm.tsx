@@ -41,12 +41,30 @@ export const TaskForm: React.FC<TaskFormProps> = ({
     priority: task?.priority || TaskPriority.MEDIUM,
     status: task?.status || TaskStatus.TODO,
     assignedTo: task?.assignedTo || '',
-    createdBy: task?.createdBy || userService.getCurrentUser()?.email || '',
+    createdBy: task?.createdBy || '',
     attachments: task?.attachments || [],
     comments: task?.comments || [],
     createdAt: task?.createdAt || new Date().toISOString(),
     updatedAt: task?.updatedAt || new Date().toISOString(),
   });
+
+  useEffect(() => {
+    const initializeUser = async () => {
+      try {
+        const currentUser = await userService.getCurrentUser();
+        setFormData(prev => ({
+          ...prev,
+          createdBy: prev.createdBy || currentUser.email
+        }));
+      } catch (error) {
+        console.error('Error fetching current user:', error);
+      }
+    };
+
+    if (!task) {
+      initializeUser();
+    }
+  }, [task]);
 
   const [error, setError] = useState<string>('');
   const [isCheckingUser, setIsCheckingUser] = useState(false);
