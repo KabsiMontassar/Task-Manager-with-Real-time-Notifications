@@ -1,5 +1,5 @@
 export const API_BASE_URL = 'http://localhost:3000';
-export const WS_BASE_URL = 'ws://localhost:3000'; 
+export const WS_BASE_URL = 'ws://localhost:3000';
 
 export const API_ENDPOINTS = {
   AUTH: {
@@ -14,16 +14,13 @@ export const API_ENDPOINTS = {
   },
   TASKS: {
     BASE: '/tasks',
-    BY_ID: (id: string) => `/tasks/${id}`, 
+    BY_ID: (id: string) => `/tasks/${id}`,
     DETAILS: (id: string) => `/tasks/${id}/details`,
-    COMMENTS: (id: string) => `/tasks/${id}/comments`,
     STATUS: (id: string) => `/tasks/${id}/status`,
-    ATTACHMENTS: (id: string) => `/tasks/${id}/attachments`,
-    ORDER: (id: string) => `/tasks/${id}/order`,  
-
+    ORDER: (id: string) => `/tasks/${id}/order`,
   },
   NOTIFICATIONS: {
-    BASE: '/notifications', 
+    BASE: '/notifications',
     BY_ID: (id: string) => `/notifications/${id}`,
   },
 };

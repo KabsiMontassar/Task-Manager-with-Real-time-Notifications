@@ -15,6 +15,7 @@ export class UserController {
       throw new Error('User not found in request');
     }
     console.log('Getting profile for user:', req.user);
+    
     const result = await this.userService.findById(req.user.userId);
     console.log('Profile result:', result);
     return result;
@@ -22,7 +23,7 @@ export class UserController {
 
   @Get('me/:userId')
   async getUserById(@Param('userId') userId: string) {
-    console.log('Getting user by ID:', userId);
+  
     return this.userService.findById(userId);
   }
 

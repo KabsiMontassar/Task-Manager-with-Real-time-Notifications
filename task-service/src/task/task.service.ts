@@ -1,8 +1,8 @@
 import { Injectable, NotFoundException, BadRequestException } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Repository } from 'typeorm';
-import { Task , TaskStatus , TaskPriority } from '../entities/task.entity';
-import { CreateTaskDto, UpdateTaskDto, AddCommentDto } from '../dto/task.dto';
+import { Task, TaskStatus } from '../entities/task.entity';
+import { CreateTaskDto, UpdateTaskDto } from '../dto/task.dto';
 import { v4 as uuidv4 } from 'uuid';
 
 @Injectable()
@@ -19,8 +19,8 @@ export class TaskService {
   async create(createTaskDto: CreateTaskDto, userId: string): Promise<Task> {
     const task = this.taskRepository.create({
       ...createTaskDto,
-      assignedTo: this.convertMongoIdToUuid(createTaskDto.assignedTo),
-      createdBy: this.convertMongoIdToUuid(userId),
+      assignedTo: createTaskDto.assignedTo,
+      createdBy: userId,
     });
     return await this.taskRepository.save(task);
   }
@@ -48,27 +48,12 @@ export class TaskService {
     return await this.taskRepository.save(task);
   }
 
-  async remove(id: string): Promise<void> {
+  async remove(id: string): Promise<{ message: string }> {
     const result = await this.taskRepository.delete(id);
     if (result.affected === 0) {
       throw new NotFoundException(`Task with ID ${id} not found`);
     }
-  }
-
-  async addComment(id: string, userId: string, commentDto: AddCommentDto): Promise<Task> {
-    const task = await this.findOne(id);
-    const comment = {
-      id: uuidv4(),
-      userId,
-      content: commentDto.content,
-      createdAt: new Date(),
-    };
-
-    if (!task.comments) {
-      task.comments = [];
-    }
-    task.comments.push(comment);
-    return await this.taskRepository.save(task);
+    return { message: 'Task deleted successfully' };
   }
 
   async updateTaskOrder(id: string, newOrder: number): Promise<Task> {
@@ -87,16 +72,14 @@ export class TaskService {
     });
   }
 
-
   async updateTaskStatus(id: string, status: string): Promise<Task> {
     const task = await this.findOne(id);
 
     if (!Object.values(TaskStatus).includes(status as TaskStatus)) {
-        throw new BadRequestException(`Invalid status: ${status}`);
+      throw new BadRequestException(`Invalid status: ${status}`);
     }
     task.status = status as TaskStatus;
     task.updatedAt = new Date();
     return this.taskRepository.save(task);
-}
-
+  }
 }

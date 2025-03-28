@@ -14,9 +14,9 @@ import { Profile } from '../profile/Profile';
 import Breezycherryblossoms from '../design/Breezycherrybossoms';
 import Particles from '../design/particles';
 import Pattern from '../design/Pattern';
-import Hexagon from '../design/hexagon';
-import ThemeSelector from '../ThemeSelector';
-import BannerSelector from '../BannerSelector';
+import Hexagon from '../design/Hexagon';
+import ThemeSelector from '../selectors/ThemeSelector';
+import BannerSelector from '../selectors/BannerSelector';
 import { themes } from '../design/Themes';
 type ThemeType = 'Light' | 'Ash' | 'Dark' | 'Oxyn';
 type BannerType = "Breezy" | "Particles" | "Pattern" | "Hexagon";
@@ -25,7 +25,13 @@ const HomePage = () => {
   const navigate = useNavigate();
   const [user, setUser] = useState<User | null>(null);
   const [loading, setLoading] = useState(true);
-  const { isOpen, onOpen, onClose } = useDisclosure();
+
+
+  const { isOpen: isDrawerOpen, onOpen: onDrawerOpen, onClose: onDrawerClose } = useDisclosure();
+
+
+
+
   const [theme, setTheme] = useState<ThemeType>('Light');
   const [dark, setDark] = useState<string>(themes[theme].dark || '#28282D');
   const [light, setLight] = useState<string>(themes[theme].light || '#333339');
@@ -81,7 +87,7 @@ const HomePage = () => {
         <Flex w={250} p={25} flexDirection={"column"} bg={dark} position="relative">
           <Flex mb={4} gap={2} alignItems="center">
             <Button w={"lg"} _hover={{ bg: 'teal.400', color: "white" }}
-              onClick={onOpen} colorScheme='teal' variant='outline'>
+              onClick={onDrawerOpen} colorScheme='teal' variant='outline'>
               View Profile
             </Button>
             <IconButton
@@ -104,14 +110,14 @@ const HomePage = () => {
 
       <ThemeSelector setTheme={setTheme} />
 
-      <Drawer onClose={onClose} placement='left' isOpen={isOpen} size={"xl"}>
+      <Drawer onClose={onDrawerClose} placement='left' isOpen={isDrawerOpen} size={"xl"}>
         <DrawerOverlay />
         <DrawerContent>
           <DrawerBody p={0} bg={light}>
             <VStack gap={0} align='stretch'>
               <Box w={"100%"} h={"30vh"} position={"relative"} bg={dark}>
 
-                
+
                 <BannerSelector setBanner={setBanner} />
 
 
@@ -130,6 +136,7 @@ const HomePage = () => {
           </DrawerBody>
         </DrawerContent>
       </Drawer>
+
     </Flex>
   );
 };

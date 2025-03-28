@@ -20,9 +20,7 @@ export class CreateTaskDto {
   @IsUUID()
   assignedTo: string;
 
-  @IsArray()
-  @IsOptional()
-  attachments?: string[];
+
 
   @IsDate()
   @IsOptional()
@@ -31,6 +29,8 @@ export class CreateTaskDto {
   @IsNumber()
   @IsOptional()
   order?: number;
+
+  
 }
 
 export class UpdateTaskDto {
@@ -65,9 +65,4 @@ export class UpdateTaskDto {
   @IsNumber()
   @IsOptional()
   order?: number;
-}
-
-export class AddCommentDto {
-  @IsString()
-  content: string;
 }

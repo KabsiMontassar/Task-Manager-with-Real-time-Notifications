@@ -43,16 +43,9 @@ export class Task {
   @Column('uuid')
   createdBy: string;
 
-  @Column({ type: 'jsonb', nullable: true })
-  attachments: string[];
+  
 
-  @Column({ type: 'jsonb', nullable: true })
-  comments: {
-    id: string;
-    userId: string;
-    content: string;
-    createdAt: Date;
-  }[];
+ 
 
   @Column({ type: 'int', default: 0 })
   order: number;
@@ -65,4 +58,7 @@ export class Task {
 
   @Column({ nullable: true })
   dueDate: Date;
+
+  @Column({ nullable: true , default: true})
+  active: boolean;
 }
