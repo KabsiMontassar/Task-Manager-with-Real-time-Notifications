@@ -50,6 +50,7 @@ import {
   Button,
 } from '@chakra-ui/react';
 import { AddIcon, DeleteIcon } from '@chakra-ui/icons';
+import {useDroppable} from '@dnd-kit/react';
 
 interface TaskListProps {
   light: string;
@@ -131,6 +132,7 @@ export const TaskList: React.FC<TaskListProps> = ({ light, dark, fontColor }) =>
       );
       setTasks(tasksWithUsers);
     } catch (error) {
+      console.error('Error loading tasks:', error);
       toast({
         title: 'Error loading tasks',
         status: 'error',
@@ -142,51 +144,60 @@ export const TaskList: React.FC<TaskListProps> = ({ light, dark, fontColor }) =>
 
   const handleDragStart = (event: DragStartEvent) => {
     setActiveId(event.active.id as string);
+
+   
+
   };
 
   const handleDragEnd = async (event: DragEndEvent) => {
     const { active, over } = event;
-    
-    if (!over) return;
 
+
+  
+    if (!over) return;
+    console.log(over.id)
+    console.log(active.id)
     const taskId = active.id as string;
     const task = tasks.find((t) => t.id === taskId);
-    
+  
     if (!task) return;
-
+  
     if (over.id === 'delete-zone') {
       setTaskToDelete(taskId);
       setIsDeleteAlertOpen(true);
       return;
     }
-
-    const newStatus = over.id as TaskStatus;
-    if (task.status !== newStatus) {
-      try {
-        await taskService.updateTaskStatus(taskId, newStatus);
-        setTasks((prevTasks) =>
-          prevTasks.map((t) =>
-            t.id === taskId ? { ...t, status: newStatus } : t
-          )
-        );
-        toast({
-          title: 'Task status updated',
-          status: 'success',
-          duration: 3000,
-          isClosable: true,
-        });
-      } catch (error) {
-        toast({
-          title: 'Error updating task status',
-          description: 'Please try again',
-          status: 'error',
-          duration: 3000,
-          isClosable: true,
-        });
-      }
+  
+    const newStatus = TASK_STATUSES.find((status) => status === over.id);
+    if (!newStatus || task.status === newStatus) return;
+  
+    try {
+      await taskService.updateTaskStatus(taskId, newStatus);
+      setTasks((prevTasks) =>
+        prevTasks.map((t) =>
+          t.id === taskId ? { ...t, status: newStatus } : t
+        )
+      );
+      toast({
+        title: 'Task status updated',
+        status: 'success',
+        duration: 3000,
+        isClosable: true,
+      });
+    } catch (error) {
+      console.error('Error updating task status:', error);
+      toast({
+        title: 'Error updating task status',
+        description: 'Please try again',
+        status: 'error',
+        duration: 3000,
+        isClosable: true,
+      });
     }
+  
     setActiveId(null);
   };
+  
 
   const handleDeleteConfirm = async () => {
     if (!taskToDelete) return;
@@ -201,6 +212,7 @@ export const TaskList: React.FC<TaskListProps> = ({ light, dark, fontColor }) =>
         isClosable: true,
       });
     } catch (error) {
+      console.error('Error deleting task:', error);
       toast({
         title: 'Error deleting task',
         status: 'error',
@@ -210,16 +222,6 @@ export const TaskList: React.FC<TaskListProps> = ({ light, dark, fontColor }) =>
     }
     setIsDeleteAlertOpen(false);
     setTaskToDelete(null);
-  };
-
-  const handleDelete = (taskId: string) => {
-    setTaskToDelete(taskId);
-    setIsDeleteAlertOpen(true);
-  };
-
-  const handleFormSubmit = () => {
-    onClose();
-    loadTasks();
   };
 
   return (
@@ -266,7 +268,6 @@ export const TaskList: React.FC<TaskListProps> = ({ light, dark, fontColor }) =>
                     <DraggableTask
                       key={task.id}
                       task={task}
-                      onDelete={() => handleDelete(task.id)}
                       light={light}
                       dark={dark}
                       fontColor={fontColor}

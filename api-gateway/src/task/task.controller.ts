@@ -41,7 +41,7 @@ export class TaskController {
 
   @Get(':id')
   async findOne(@Param('id') id: string) {
-    return this.taskClient.send({ cmd: 'findOneTask' }, { id });
+    return this.taskClient.send({ cmd: 'findOneTask' }, id);
   }
 
   @Put(':id')
@@ -52,10 +52,8 @@ export class TaskController {
 
   @Delete(':id')
   async remove(@Param('id') id: string) {
-    return this.taskClient.send({ cmd: 'removeTask' }, { id });
+    return this.taskClient.send({ cmd: 'removeTask' }, id);
   }
-
-
 
   @Put(':id/status')
   @UsePipes(new ValidationPipe())
@@ -64,7 +62,10 @@ export class TaskController {
     @Body() updateStatusDto: UpdateStatusDto,
     @Request() req,
   ) {
-    return this.taskClient.send({ cmd: 'updateTaskStatus' }, { id, ...updateStatusDto, userId: req.user.id });
+    return this.taskClient.send(
+      { cmd: 'updateTaskStatus' }, 
+      { id, status: updateStatusDto.status, userId: req.user.id }
+    );
   }
 
   @Put(':id/order')
@@ -72,7 +73,6 @@ export class TaskController {
   async updateTaskOrder(@Param('id') id: string, @Body() updateTaskOrderDto: UpdateTaskOrderDto) {
     return this.taskClient.send({ cmd: 'updateTaskOrder' }, { id, ...updateTaskOrderDto });
   }
-  
 
   @Get('/assignee/:userId')
   async getTasksByAssignee(@Param('userId') userId: string) {

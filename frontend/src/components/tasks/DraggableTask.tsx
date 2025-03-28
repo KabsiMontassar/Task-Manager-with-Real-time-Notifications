@@ -7,15 +7,12 @@ import {
   Text,
   Badge,
   Flex,
-  IconButton,
   Avatar,
   Tooltip,
 } from '@chakra-ui/react';
-import { DeleteIcon } from '@chakra-ui/icons';
 
 interface DraggableTaskProps {
   task: TaskWithUser;
-  onDelete: (taskId: string) => void;
   light: string;
   dark: string;
   fontColor: string;
@@ -23,8 +20,6 @@ interface DraggableTaskProps {
 
 export const DraggableTask: React.FC<DraggableTaskProps> = ({
   task,
-  onDelete,
-  light,
   dark,
   fontColor,
 }) => {
@@ -94,22 +89,6 @@ export const DraggableTask: React.FC<DraggableTaskProps> = ({
         <Text fontWeight="bold" color={fontColor} noOfLines={1} flex="1">
           {task.title}
         </Text>
-        <Flex visibility="visible" opacity={1} transition="all 0.2s">
-          <Tooltip label="Delete task" placement="top">
-            <IconButton
-              aria-label="Delete task"
-              icon={<DeleteIcon />}
-              size="sm"
-              variant="ghost"
-              colorScheme="red"
-              onClick={(e) => {
-                e.stopPropagation();
-                onDelete(task.id);
-              }}
-              _groupHover={{ color: 'red.400' }}
-            />
-          </Tooltip>
-        </Flex>
       </Flex>
 
       {task.description && (
@@ -133,9 +112,10 @@ export const DraggableTask: React.FC<DraggableTaskProps> = ({
             placement="top"
           >
             <Avatar
-              size="xs"
+              size="sm"
+
               name={`${task.assignedToUser.firstName} ${task.assignedToUser.lastName}`}
-              bg={light}
+              bg={"teal"}
               color={dark}
             />
           </Tooltip>
