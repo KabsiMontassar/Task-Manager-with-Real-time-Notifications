@@ -1,9 +1,6 @@
-import axios from 'axios';
+import api from './api.service';
 import { Task, TaskStatus, TaskPriority } from '../types/task';
 import { API_ENDPOINTS } from '../config/api.config';
-
-
-const API_URL = API_ENDPOINTS;
 
 interface CreateTaskDto {
   title: string;
@@ -24,7 +21,7 @@ interface UpdateTaskDto {
 class TaskService {
   async getAllTasks(): Promise<Task[]> {
     try {
-      const response = await axios.get<Task[]>(`${API_URL}/tasks`);
+      const response = await api.get<Task[]>(API_ENDPOINTS.TASKS.BASE);
       return response.data;
     } catch (error) {
       if (axios.isAxiosError(error)) {
@@ -37,7 +34,7 @@ class TaskService {
 
   async getTaskById(id: string): Promise<Task> {
     try {
-      const response = await axios.get<Task>(`${API_URL}/tasks/${id}`);
+      const response = await api.get<Task>(API_ENDPOINTS.TASKS.BY_ID(id));
       return response.data;
     } catch (error) {
       if (axios.isAxiosError(error)) {
@@ -50,7 +47,7 @@ class TaskService {
 
   async createTask(taskData: CreateTaskDto): Promise<Task> {
     try {
-      const response = await axios.post<Task>(`${API_URL}/tasks`, taskData);
+      const response = await api.post<Task>(API_ENDPOINTS.TASKS.BASE, taskData);
       return response.data;
     } catch (error) {
       if (axios.isAxiosError(error)) {
@@ -63,11 +60,11 @@ class TaskService {
 
   async updateTask(id: string, taskData: UpdateTaskDto): Promise<Task> {
     try {
-      const response = await axios.put<Task>(`${API_URL}/tasks/${id}`, taskData);
+      const response = await api.patch<Task>(API_ENDPOINTS.TASKS.BY_ID(id), taskData);
       return response.data;
     } catch (error) {
       if (axios.isAxiosError(error)) {
-        throw new Error(`Failed to update task with id ${id}: ${error.message}`);
+        throw new Error(`Failed to update task: ${error.message}`);
       } else {
         throw error;
       }
@@ -76,10 +73,10 @@ class TaskService {
 
   async deleteTask(id: string): Promise<void> {
     try {
-      await axios.delete(`${API_URL}/tasks/${id}`);
+      await api.delete(API_ENDPOINTS.TASKS.BY_ID(id));
     } catch (error) {
       if (axios.isAxiosError(error)) {
-        throw new Error(`Failed to delete task with id ${id}: ${error.message}`);
+        throw new Error(`Failed to delete task: ${error.message}`);
       } else {
         throw error;
       }
@@ -88,11 +85,11 @@ class TaskService {
 
   async updateTaskStatus(id: string, status: TaskStatus): Promise<Task> {
     try {
-      const response = await axios.put<Task>(`${API_URL}/tasks/${id}/status`, { status });
+      const response = await api.patch<Task>(API_ENDPOINTS.TASKS.STATUS(id), { status });
       return response.data;
     } catch (error) {
       if (axios.isAxiosError(error)) {
-        throw new Error(`Failed to update task status for task with id ${id}: ${error.message}`);
+        throw new Error(`Failed to update task status: ${error.message}`);
       } else {
         throw error;
       }
@@ -101,11 +98,11 @@ class TaskService {
 
   async updateTaskOrder(id: string, order: number): Promise<Task> {
     try {
-      const response = await axios.put<Task>(`${API_URL}/tasks/${id}/order`, { order });
+      const response = await api.patch<Task>(API_ENDPOINTS.TASKS.ORDER(id), { order });
       return response.data;
     } catch (error) {
       if (axios.isAxiosError(error)) {
-        throw new Error(`Failed to update task order for task with id ${id}: ${error.message}`);
+        throw new Error(`Failed to update task order: ${error.message}`);
       } else {
         throw error;
       }
@@ -114,11 +111,11 @@ class TaskService {
 
   async getTasksByAssignee(userId: string): Promise<Task[]> {
     try {
-      const response = await axios.get<Task[]>(`${API_URL}/tasks/assignee/${userId}`);
+      const response = await api.get<Task[]>(`${API_ENDPOINTS.TASKS.BASE}?assignedTo=${userId}`);
       return response.data;
     } catch (error) {
       if (axios.isAxiosError(error)) {
-        throw new Error(`Failed to fetch tasks for assignee with id ${userId}: ${error.message}`);
+        throw new Error(`Failed to fetch tasks for user ${userId}: ${error.message}`);
       } else {
         throw error;
       }

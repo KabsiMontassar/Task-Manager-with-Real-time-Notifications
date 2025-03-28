@@ -28,8 +28,8 @@ import {
 } from "@dnd-kit/sortable";
 import { taskService } from "../../services/task.service";
 import { Task as TaskType, TaskStatus, TaskPriority } from "../../types/task";
-import { useAuth } from "../../hooks/useAuth";
-import Column from "./Column"
+import Column from "./Column";
+
 interface BoardData {
   [status: string]: TaskType[];
 }
@@ -48,7 +48,6 @@ export const statusLabels: Record<TaskStatus, string> = {
   DONE: "Done",
 };
 
-
 export const Board: React.FC = () => {
   const [boardData, setBoardData] = useState<BoardData>({
     TODO: [],
@@ -59,7 +58,6 @@ export const Board: React.FC = () => {
   const { isOpen, onOpen, onClose } = useDisclosure();
   const [currentTask, setCurrentTask] = useState<Partial<TaskType> | null>(null);
   const toast = useToast();
-  const { user } = useAuth();
 
   useEffect(() => {
     fetchTasks();
@@ -68,6 +66,7 @@ export const Board: React.FC = () => {
   const fetchTasks = async () => {
     try {
       const tasks = await taskService.getAllTasks();
+      console.log(tasks)
       const groupedTasks = tasks.reduce((acc, task) => {
         acc[task.status] = [...(acc[task.status] || []), task];
         return acc;
@@ -198,8 +197,8 @@ export const Board: React.FC = () => {
     setCurrentTask({
       status,
       priority: TaskPriority.MEDIUM,
-      assignedTo: user?.email || '',
-      createdBy: user?.email || '',
+      assignedTo: '',
+      createdBy: '',
     });
     onOpen();
   };
@@ -262,7 +261,7 @@ export const Board: React.FC = () => {
           description: currentTask.description,
           status: currentTask.status || TaskStatus.TODO,
           priority: currentTask.priority as TaskPriority,
-          assignedTo: currentTask.assignedTo,
+          assignedTo: currentTask.assignedTo || '',
           order: boardData[currentTask.status || TaskStatus.TODO].length,
         });
         toast({

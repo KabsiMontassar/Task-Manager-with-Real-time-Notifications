@@ -21,6 +21,8 @@ export interface Task {
   order: number;
   createdAt?: Date;
   updatedAt?: Date;
+  dueDate?: Date;
+  active?: boolean;
 }
 
 export interface TaskWithUser extends Task {
