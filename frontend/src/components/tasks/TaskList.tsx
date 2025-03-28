@@ -40,8 +40,16 @@ import {
   ModalCloseButton,
   Flex,
   useDisclosure,
+  useColorModeValue,
+  AlertDialog,
+  AlertDialogBody,
+  AlertDialogFooter,
+  AlertDialogHeader,
+  AlertDialogContent,
+  AlertDialogOverlay,
+  Button,
 } from '@chakra-ui/react';
-import { AddIcon } from '@chakra-ui/icons';
+import { AddIcon, DeleteIcon } from '@chakra-ui/icons';
 
 interface TaskListProps {
   light: string;
@@ -57,6 +65,9 @@ export const TaskList: React.FC<TaskListProps> = ({ light, dark, fontColor }) =>
   const { isOpen, onOpen, onClose } = useDisclosure();
   const [selectedTask, setSelectedTask] = useState<Task | null>(null);
   const toast = useToast();
+  const [isDeleteAlertOpen, setIsDeleteAlertOpen] = useState(false);
+  const [taskToDelete, setTaskToDelete] = useState<string | null>(null);
+  const cancelRef = React.useRef<HTMLButtonElement>(null);
 
   const sensors = useSensors(
     useSensor(PointerSensor),
@@ -129,180 +140,230 @@ export const TaskList: React.FC<TaskListProps> = ({ light, dark, fontColor }) =>
     }
   };
 
-  const handleDelete = async (taskId: string) => {
-    if (window.confirm('Are you sure you want to delete this task?')) {
-      try {
-        await taskService.deleteTask(taskId);
-        setTasks(tasks.filter(task => task.id !== taskId));
-        toast({
-          title: 'Task deleted successfully',
-          status: 'success',
-          duration: 2000,
-          isClosable: true,
-        });
-      } catch (error) {
-        toast({
-          title: 'Error deleting task',
-          status: 'error',
-          duration: 3000,
-          isClosable: true,
-        });
-      }
-    }
-  };
-
-  const handleEdit = (task: TaskWithUser) => {
-    setSelectedTask(task);
-    onOpen();
-  };
-
-  const handleFormSubmit = () => {
-    onClose();
-    setSelectedTask(null);
-    loadTasks();
-  };
-
   const handleDragStart = (event: DragStartEvent) => {
     setActiveId(event.active.id as string);
   };
 
   const handleDragEnd = async (event: DragEndEvent) => {
     const { active, over } = event;
-    setActiveId(null);
-
+    
     if (!over) return;
 
-    const activeTask = tasks.find((task) => task.id === active.id);
-    if (!activeTask) return;
+    const taskId = active.id as string;
+    const task = tasks.find((t) => t.id === taskId);
+    
+    if (!task) return;
 
-    const overId = String(over.id);
-    const newStatus = TASK_STATUSES.includes(overId as TaskStatus)
-      ? (overId as TaskStatus)
-      : tasks.find((task) => task.id === overId)?.status;
+    if (over.id === 'delete-zone') {
+      setTaskToDelete(taskId);
+      setIsDeleteAlertOpen(true);
+      return;
+    }
 
-    if (!newStatus || activeTask.status === newStatus) return;
+    const newStatus = over.id as TaskStatus;
+    if (task.status !== newStatus) {
+      try {
+        await taskService.updateTaskStatus(taskId, newStatus);
+        setTasks((prevTasks) =>
+          prevTasks.map((t) =>
+            t.id === taskId ? { ...t, status: newStatus } : t
+          )
+        );
+        toast({
+          title: 'Task status updated',
+          status: 'success',
+          duration: 3000,
+          isClosable: true,
+        });
+      } catch (error) {
+        toast({
+          title: 'Error updating task status',
+          description: 'Please try again',
+          status: 'error',
+          duration: 3000,
+          isClosable: true,
+        });
+      }
+    }
+    setActiveId(null);
+  };
+
+  const handleDeleteConfirm = async () => {
+    if (!taskToDelete) return;
 
     try {
-      await taskService.updateTask(activeTask.id, {
-        ...activeTask,
-        status: newStatus
-      });
-
-      setTasks(tasks.map(task =>
-        task.id === activeTask.id
-          ? { ...task, status: newStatus }
-          : task
-      ));
-
+      await taskService.deleteTask(taskToDelete);
+      setTasks((prevTasks) => prevTasks.filter((t) => t.id !== taskToDelete));
       toast({
-        title: 'Task updated',
+        title: 'Task deleted',
         status: 'success',
-        duration: 2000,
+        duration: 3000,
         isClosable: true,
       });
     } catch (error) {
       toast({
-        title: 'Error updating task',
-        description: 'Failed to update task status',
+        title: 'Error deleting task',
         status: 'error',
         duration: 3000,
         isClosable: true,
       });
     }
+    setIsDeleteAlertOpen(false);
+    setTaskToDelete(null);
   };
 
-  const getTasksByStatus = (status: TaskStatus) => {
-    return tasks.filter(task => task.status === status);
+  const handleDelete = (taskId: string) => {
+    setTaskToDelete(taskId);
+    setIsDeleteAlertOpen(true);
+  };
+
+  const handleFormSubmit = () => {
+    onClose();
+    loadTasks();
   };
 
   return (
     <Box p={5}>
+      <Flex justifyContent="space-between" alignItems="center" mb={5}>
+        <Heading size="lg" color={fontColor}>Tasks</Heading>
+        <IconButton
+          aria-label="Add task"
+          icon={<AddIcon />}
+          onClick={() => {
+            setSelectedTask(null);
+            onOpen();
+          }}
+          colorScheme="blue"
+        />
+      </Flex>
+
       <DndContext
         sensors={sensors}
         collisionDetection={closestCorners}
         onDragStart={handleDragStart}
         onDragEnd={handleDragEnd}
       >
-        <Grid templateColumns="repeat(3, 1fr)" gap={6}>
+        <Grid templateColumns="repeat(3, 1fr)" gap={6} mb={4}>
           {TASK_STATUSES.map((status) => (
             <GridItem
               key={status}
               bg={light}
               p={4}
               borderRadius="lg"
-              minH="70vh"
+              minH="400px"
               id={status}
-              data-droppable="true"
             >
-              <Flex justify="space-between" align="center" mb={4}>
-                <Heading size="md" color={fontColor}>
-                  {status.replace('_', ' ')}
-                </Heading>
-                <IconButton
-                  aria-label="Add task"
-                  icon={<AddIcon />}
-                  onClick={() => {
-                    setSelectedTask({ status } as Task);
-                    onOpen();
-                  }}
-                  size="sm"
-                  colorScheme="teal"
-                />
-              </Flex>
-              <Box minH="200px">
-                <SortableContext
-                  items={getTasksByStatus(status).map(task => task.id)}
-                  strategy={verticalListSortingStrategy}
-                >
-                  {getTasksByStatus(status).map((task) => (
+              <Heading size="md" mb={4} color={fontColor}>
+                {status.replace(/_/g, ' ')}
+              </Heading>
+              <SortableContext
+                items={tasks.filter((t) => t.status === status).map((t) => t.id)}
+                strategy={verticalListSortingStrategy}
+              >
+                {tasks
+                  .filter((task) => task.status === status)
+                  .map((task) => (
                     <DraggableTask
                       key={task.id}
                       task={task}
-                      onEdit={() => handleEdit(task)}
                       onDelete={() => handleDelete(task.id)}
                       light={light}
                       dark={dark}
                       fontColor={fontColor}
                     />
                   ))}
-                </SortableContext>
-              </Box>
+              </SortableContext>
             </GridItem>
           ))}
         </Grid>
 
+        <Box
+          bg={useColorModeValue('red.100', 'red.900')}
+          p={4}
+          borderRadius="lg"
+          textAlign="center"
+          id="delete-zone"
+          border="2px dashed"
+          borderColor={useColorModeValue('red.300', 'red.600')}
+          _hover={{ bg: useColorModeValue('red.200', 'red.800') }}
+        >
+          <Flex alignItems="center" justifyContent="center" color={fontColor}>
+            <DeleteIcon mr={2} />
+            Drop here to delete task
+          </Flex>
+        </Box>
+
         <DragOverlay>
           {activeId ? (
             <Box
-              bg={light}
+              bg={dark}
               p={4}
               borderRadius="md"
               boxShadow="lg"
               opacity={0.8}
             >
-              {tasks.find(task => task.id === activeId)?.title}
+              {tasks.find((task) => task.id === activeId)?.title}
             </Box>
           ) : null}
         </DragOverlay>
       </DndContext>
 
-      <Modal isOpen={isOpen} onClose={onClose}>
+      <Modal isOpen={isOpen} onClose={onClose} size="xl">
         <ModalOverlay />
         <ModalContent bg={light}>
           <ModalHeader color={fontColor}>
-            {selectedTask?.id ? 'Edit Task' : 'New Task'}
+            {selectedTask ? 'Edit Task' : 'Create Task'}
           </ModalHeader>
           <ModalCloseButton />
-          <ModalBody>
+          <ModalBody pb={6}>
             <TaskForm
               task={selectedTask}
-              onSubmit={handleFormSubmit}
+              onSubmit={() => {
+                onClose();
+                loadTasks();
+              }}
               light={light}
               fontColor={fontColor}
             />
           </ModalBody>
         </ModalContent>
       </Modal>
+
+      <AlertDialog
+        isOpen={isDeleteAlertOpen}
+        leastDestructiveRef={cancelRef}
+        onClose={() => {
+          setIsDeleteAlertOpen(false);
+          setTaskToDelete(null);
+        }}
+      >
+        <AlertDialogOverlay>
+          <AlertDialogContent bg={light}>
+            <AlertDialogHeader fontSize="lg" fontWeight="bold" color={fontColor}>
+              Delete Task
+            </AlertDialogHeader>
+
+            <AlertDialogBody color={fontColor}>
+              Are you sure you want to delete this task?
+            </AlertDialogBody>
+
+            <AlertDialogFooter>
+              <Button
+                ref={cancelRef}
+                onClick={() => {
+                  setIsDeleteAlertOpen(false);
+                  setTaskToDelete(null);
+                }}
+              >
+                Cancel
+              </Button>
+              <Button colorScheme="red" onClick={handleDeleteConfirm} ml={3}>
+                Delete
+              </Button>
+            </AlertDialogFooter>
+          </AlertDialogContent>
+        </AlertDialogOverlay>
+      </AlertDialog>
     </Box>
   );
 };
