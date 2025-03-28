@@ -10,18 +10,7 @@ export enum TaskPriority {
   HIGH = 'HIGH'
 }
 
-export interface Attachment {
-  id: string;
-  filename: string;
-  createdAt: string;
-}
 
-export interface Comment {
-  id: string;
-  content: string;
-  userId: string;
-  createdAt: string;
-}
 
 export interface Task {
   id: string;
@@ -32,8 +21,6 @@ export interface Task {
   dueDate?: string;
   assignedTo: string;
   createdBy: string;
-  attachments: Attachment[];
-  comments: Comment[];
   order?: number;
   createdAt: string;
   updatedAt: string;
@@ -48,10 +35,4 @@ export interface TaskWithUser extends Task {
     id: string;
     name: string;
   };
-  commentDetails?: {
-    id: string;
-    content: string;
-    userId: string;
-    createdAt: string;
-  }[];
 }

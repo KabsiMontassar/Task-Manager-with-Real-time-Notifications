@@ -11,11 +11,10 @@ import {
   Avatar,
   Tooltip,
 } from '@chakra-ui/react';
-import { EditIcon, DeleteIcon } from '@chakra-ui/icons';
+import { DeleteIcon } from '@chakra-ui/icons';
 
 interface DraggableTaskProps {
   task: TaskWithUser;
-  onEdit: (task: TaskWithUser) => void;
   onDelete: (taskId: string) => void;
   light: string;
   dark: string;
@@ -24,7 +23,6 @@ interface DraggableTaskProps {
 
 export const DraggableTask: React.FC<DraggableTaskProps> = ({
   task,
-  onEdit,
   onDelete,
   light,
   dark,
@@ -97,20 +95,6 @@ export const DraggableTask: React.FC<DraggableTaskProps> = ({
           {task.title}
         </Text>
         <Flex visibility="visible" opacity={1} transition="all 0.2s">
-          <Tooltip label="Edit task" placement="top">
-            <IconButton
-              aria-label="Edit task"
-              icon={<EditIcon />}
-              size="sm"
-              variant="ghost"
-              colorScheme="blue"
-              onClick={(e) => {
-                e.stopPropagation();
-                onEdit(task);
-              }}
-              _groupHover={{ color: 'blue.400' }}
-            />
-          </Tooltip>
           <Tooltip label="Delete task" placement="top">
             <IconButton
               aria-label="Delete task"

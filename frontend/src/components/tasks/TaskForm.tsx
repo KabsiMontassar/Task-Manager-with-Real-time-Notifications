@@ -42,8 +42,6 @@ export const TaskForm: React.FC<TaskFormProps> = ({
     status: task?.status || TaskStatus.TODO,
     assignedTo: task?.assignedTo || '',
     createdBy: task?.createdBy || '',
-    attachments: task?.attachments || [],
-    comments: task?.comments || [],
     createdAt: task?.createdAt || new Date().toISOString(),
     updatedAt: task?.updatedAt || new Date().toISOString(),
   });
