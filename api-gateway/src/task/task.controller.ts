@@ -14,7 +14,7 @@ import {
 import { ClientProxy } from '@nestjs/microservices';
 import { Inject } from '@nestjs/common';
 import { JwtAuthGuard } from '../auth/jwt-auth.guard';
-import { CreateTaskDto, UpdateTaskDto , UpdateStatusDto,UpdateTaskOrderDto } from './dtos/task.dtos';
+import { CreateTaskDto, UpdateTaskDto , UpdateStatusDto,UpdateTaskOrderDto ,UpdateActiveDto} from './dtos/task.dtos';
 
 @Controller('tasks')
 @UseGuards(JwtAuthGuard)
@@ -65,6 +65,21 @@ export class TaskController {
     return this.taskClient.send(
       { cmd: 'updateTaskStatus' }, 
       { id, status: updateStatusDto.status, userId: req.user.id }
+    );
+  }
+
+
+
+
+  @Put(':id/active')
+  @UsePipes(new ValidationPipe())
+  async updateActive(
+    @Param('id') id: string,
+    @Request() req,
+  ) {
+    return this.taskClient.send(
+      { cmd: 'updateTaskActive' }, 
+      { id, userId: req.user.id }
     );
   }
 

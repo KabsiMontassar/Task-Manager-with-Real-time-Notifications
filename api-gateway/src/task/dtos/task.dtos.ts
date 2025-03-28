@@ -70,6 +70,14 @@ export class UpdateStatusDto {
   status: TaskStatus;
 }
 
+
+export class UpdateActiveDto {
+  @IsEnum(TaskStatus)
+  @IsNotEmpty()
+  active: boolean;
+}
+
+
 export class UpdateTaskOrderDto {
   @IsNumber()
   @IsNotEmpty()

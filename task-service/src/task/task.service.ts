@@ -85,4 +85,12 @@ export class TaskService {
     task.updatedAt = new Date();
     return this.taskRepository.save(task);
   }
+
+
+  async updateTaskActive(id: string): Promise<Task> {
+    const task = await this.findOne(id);
+    task.active = false;
+    task.updatedAt = new Date();
+    return this.taskRepository.save(task);
+  }
 }

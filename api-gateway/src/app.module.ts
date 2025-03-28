@@ -14,7 +14,7 @@ import { WebsocketModule } from './websocket/websocket.module';
       {
         name: 'USER_SERVICE',
         transport: Transport.TCP,
-        options: { port: 3001 },
+        options: { host: 'localhost', port: 3001 }, // Adjust host and port as needed
       },
       {
         name: 'TASK_SERVICE',

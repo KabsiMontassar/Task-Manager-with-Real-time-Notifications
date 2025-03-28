@@ -1,4 +1,4 @@
-import { Controller, Get, Put, Delete, Param, Body, UseGuards, Req } from '@nestjs/common';
+import { Controller, Get, Put, Delete, Param, Body, UseGuards, Req, NotFoundException } from '@nestjs/common';
 import { UserService } from './user.service';
 import { UpdateUserDto } from '../dto/user.dto';
 import { MessagePattern, Payload } from '@nestjs/microservices';
@@ -7,7 +7,7 @@ import { Request } from 'express';
 
 @Controller('users')
 export class UserController {
-    constructor(private readonly userService: UserService) {}
+    constructor(private readonly userService: UserService) { }
 
     @Get('me')
     @UseGuards(JwtAuthGuard)
@@ -18,10 +18,31 @@ export class UserController {
         return this.userService.findById(req.user.userId);
     }
 
-    @Get()
-    async findAll() {
-        return this.userService.findAll();
+    @Get('all')
+    @UseGuards(JwtAuthGuard)
+    async getAllUsers(@Req() req: Request) {
+        try {
+            if (!req.user) {
+                throw new Error('Unauthorized access: User not found in request');
+            }
+
+            console.log('Fetching all users for:', req.user);
+
+            const users = await this.userService.findAll();
+
+            console.log('Raw user data:', users);
+
+            if (!users || users.length === 0) {
+                throw new NotFoundException('No users found');
+            }
+
+            return users;
+        } catch (error) {
+            console.error('Error fetching all users:', error);
+            throw error;
+        }
     }
+
 
     @Get(':id')
     async findById(@Param('id') id: string) {
@@ -71,5 +92,16 @@ export class UserController {
     @MessagePattern('user_update_password')
     async updatePasswordMicroservice(@Payload() payload: { id: string; data: any }) {
         return this.userService.updatePassword(payload.id, payload.data);
+    }
+
+    @MessagePattern({ cmd: 'findAllUsers' })
+    async findAllUsersMicroservice() {
+        try {
+            const users = await this.userService.findAll();
+            return users;
+        } catch (error) {
+            console.error('Error fetching all users in microservice:', error);
+            throw error;
+        }
     }
 }

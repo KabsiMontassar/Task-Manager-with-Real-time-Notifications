@@ -6,7 +6,6 @@ import {
   Card,
   CardBody,
   Text,
-  IconButton,
   VStack,
   Tooltip,
   Avatar,
@@ -16,7 +15,6 @@ import {
   useSortable,
 } from "@dnd-kit/sortable";
 import { CSS } from "@dnd-kit/utilities";
-import { DeleteIcon } from "@chakra-ui/icons";
 import { Task as TaskType } from "../../types/task";
 import { format } from "date-fns";
 
@@ -29,7 +27,7 @@ interface TaskProps {
   fontColor: string;
 }
 
-const Task: React.FC<TaskProps> = ({ task, onDelete, light, fontColor }) => {
+const Task: React.FC<TaskProps> = ({ task, light, fontColor }) => {
   const {
     attributes,
     listeners,
@@ -77,14 +75,7 @@ const Task: React.FC<TaskProps> = ({ task, onDelete, light, fontColor }) => {
               <Tooltip label={task.title} placement="top-start">
                 <Text color={fontColor} fontWeight="medium" noOfLines={1}>{task.title}</Text>
               </Tooltip>
-              <IconButton
-                bg={"none"}
-                _hover={{ bg: "none" }}
-                aria-label="Delete Task"
-                icon={<DeleteIcon />}
-                onClick={() => onDelete(task.id)}
-                color="red.500"
-              />
+           
             </Flex>
             {task.description && (
               <Tooltip label={task.description}>
