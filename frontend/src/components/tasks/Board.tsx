@@ -24,6 +24,10 @@ import {
   MenuButton,
   MenuList,
   MenuItem,
+  Select,
+  Textarea,
+  useToast,
+  VStack,
 } from "@chakra-ui/react";
 import {
   DndContext,
@@ -40,7 +44,8 @@ import { CSS } from "@dnd-kit/utilities";
 import { useDroppable } from "@dnd-kit/core";
 import { AddIcon, DeleteIcon, EditIcon } from "@chakra-ui/icons";
 import { taskService } from "../../services/task.service";
-import { Task as TaskType, TaskStatus } from "../../types/task";
+import { Task as TaskType, TaskStatus, TaskPriority } from "../../types/task";
+import { useAuth } from "../../hooks/useAuth";
 
 interface BoardData {
   [status: string]: TaskType[];
@@ -91,6 +96,12 @@ const Task: React.FC<TaskProps> = ({ task, onEdit, onDelete }) => {
     cursor: "grab",
   };
 
+  const priorityColors = {
+    LOW: "green",
+    MEDIUM: "yellow",
+    HIGH: "red",
+  };
+
   return (
     <Box
       ref={setNodeRef}
@@ -105,31 +116,46 @@ const Task: React.FC<TaskProps> = ({ task, onEdit, onDelete }) => {
         _hover={{ boxShadow: "md" }}
       >
         <CardBody p={3}>
-          <Flex justify="space-between" align="center">
-            <Text>{task.title}</Text>
-            <Menu>
-              <MenuButton
-                as={IconButton}
-                aria-label="Task actions"
-                icon={<EditIcon />}
-                variant="ghost"
-                size="sm"
-                onClick={(e) => e.stopPropagation()}
-              />
-              <MenuList>
-                <MenuItem icon={<EditIcon />} onClick={() => onEdit(task)}>
-                  Edit
-                </MenuItem>
-                <MenuItem
-                  icon={<DeleteIcon />}
-                  onClick={() => onDelete(task.id)}
-                  color="red.500"
-                >
-                  Delete
-                </MenuItem>
-              </MenuList>
-            </Menu>
-          </Flex>
+          <VStack align="stretch" spacing={2}>
+            <Flex justify="space-between" align="center">
+              <Text fontWeight="medium">{task.title}</Text>
+              <Menu>
+                <MenuButton
+                  as={IconButton}
+                  aria-label="Task actions"
+                  icon={<EditIcon />}
+                  variant="ghost"
+                  size="sm"
+                  onClick={(e) => e.stopPropagation()}
+                />
+                <MenuList>
+                  <MenuItem icon={<EditIcon />} onClick={() => onEdit(task)}>
+                    Edit
+                  </MenuItem>
+                  <MenuItem
+                    icon={<DeleteIcon />}
+                    onClick={() => onDelete(task.id)}
+                    color="red.500"
+                  >
+                    Delete
+                  </MenuItem>
+                </MenuList>
+              </Menu>
+            </Flex>
+            {task.description && (
+              <Text fontSize="sm" color="gray.500" noOfLines={2}>
+                {task.description}
+              </Text>
+            )}
+            <Flex justify="space-between" align="center" fontSize="sm">
+              <Badge colorScheme={priorityColors[task.priority]}>
+                {task.priority}
+              </Badge>
+              <Text color="gray.500">
+                Assigned to: {task.assignedTo}
+              </Text>
+            </Flex>
+          </VStack>
         </CardBody>
       </Card>
     </Box>
@@ -186,6 +212,8 @@ export const Board: React.FC = () => {
   const [loading, setLoading] = useState(true);
   const { isOpen, onOpen, onClose } = useDisclosure();
   const [currentTask, setCurrentTask] = useState<Partial<TaskType> | null>(null);
+  const toast = useToast();
+  const { user } = useAuth();
 
   useEffect(() => {
     fetchTasks();
@@ -207,6 +235,13 @@ export const Board: React.FC = () => {
       setBoardData(groupedTasks);
     } catch (error) {
       console.error("Failed to fetch tasks:", error);
+      toast({
+        title: "Error fetching tasks",
+        description: error instanceof Error ? error.message : "An error occurred",
+        status: "error",
+        duration: 5000,
+        isClosable: true,
+      });
     } finally {
       setLoading(false);
     }
@@ -250,7 +285,19 @@ export const Board: React.FC = () => {
           }));
 
           // Update order in backend
-          await updateTaskOrders(newItems);
+          try {
+            await updateTaskOrders(newItems);
+          } catch (error) {
+            console.error("Failed to update task order:", error);
+            toast({
+              title: "Error updating task order",
+              description: error instanceof Error ? error.message : "An error occurred",
+              status: "error",
+              duration: 5000,
+              isClosable: true,
+            });
+            fetchTasks(); // Revert on error
+          }
         }
       }
       return;
@@ -291,8 +338,14 @@ export const Board: React.FC = () => {
       await updateTaskOrders(boardData[destinationColumn]);
     } catch (error) {
       console.error("Failed to update task:", error);
-      // Revert on error
-      fetchTasks();
+      toast({
+        title: "Error updating task",
+        description: error instanceof Error ? error.message : "An error occurred",
+        status: "error",
+        duration: 5000,
+        isClosable: true,
+      });
+      fetchTasks(); // Revert on error
     }
   };
 
@@ -304,7 +357,12 @@ export const Board: React.FC = () => {
   };
 
   const handleAddTask = (status: TaskStatus) => {
-    setCurrentTask({ status });
+    setCurrentTask({ 
+      status,
+      priority: TaskPriority.MEDIUM,
+      assignedTo: user?.email || '',
+      createdBy: user?.email || '',
+    });
     onOpen();
   };
 
@@ -316,33 +374,78 @@ export const Board: React.FC = () => {
   const handleDeleteTask = async (id: string) => {
     try {
       await taskService.deleteTask(id);
+      toast({
+        title: "Task deleted",
+        status: "success",
+        duration: 3000,
+        isClosable: true,
+      });
       fetchTasks();
     } catch (error) {
       console.error("Failed to delete task:", error);
+      toast({
+        title: "Error deleting task",
+        description: error instanceof Error ? error.message : "An error occurred",
+        status: "error",
+        duration: 5000,
+        isClosable: true,
+      });
     }
   };
 
   const handleSaveTask = async () => {
-    if (!currentTask?.title) return;
+    if (!currentTask?.title) {
+      toast({
+        title: "Title is required",
+        status: "error",
+        duration: 3000,
+        isClosable: true,
+      });
+      return;
+    }
 
     try {
       if (currentTask.id) {
         await taskService.updateTask(currentTask.id, {
           title: currentTask.title,
           description: currentTask.description,
+          priority: currentTask.priority as TaskPriority,
+          assignedTo: currentTask.assignedTo,
+        });
+        toast({
+          title: "Task updated",
+          status: "success",
+          duration: 3000,
+          isClosable: true,
         });
       } else {
         await taskService.createTask({
           title: currentTask.title,
           description: currentTask.description,
           status: currentTask.status || TaskStatus.TODO,
-          order: boardData[currentTask.status || "TODO"].length,
+          priority: currentTask.priority as TaskPriority,
+          assignedTo: currentTask.assignedTo,
+          order: boardData[currentTask.status || TaskStatus.TODO].length,
+        });
+        toast({
+          title: "Task created",
+          status: "success",
+          duration: 3000,
+          isClosable: true,
         });
       }
       fetchTasks();
       onClose();
+      setCurrentTask(null);
     } catch (error) {
       console.error("Failed to save task:", error);
+      toast({
+        title: "Error saving task",
+        description: error instanceof Error ? error.message : "An error occurred",
+        status: "error",
+        duration: 5000,
+        isClosable: true,
+      });
     }
   };
 
@@ -385,17 +488,33 @@ export const Board: React.FC = () => {
           <ModalHeader>{currentTask?.id ? "Edit Task" : "Create Task"}</ModalHeader>
           <ModalCloseButton />
           <ModalBody>
-            <Input
-              placeholder="Task title"
-              value={currentTask?.title || ""}
-              onChange={(e) => setCurrentTask(prev => ({ ...prev, title: e.target.value }))}
-              mb={4}
-            />
-            <Input
-              placeholder="Description (optional)"
-              value={currentTask?.description || ""}
-              onChange={(e) => setCurrentTask(prev => ({ ...prev, description: e.target.value }))}
-            />
+            <VStack spacing={4}>
+              <Input
+                placeholder="Task title"
+                value={currentTask?.title || ""}
+                onChange={(e) => setCurrentTask(prev => ({ ...prev, title: e.target.value }))}
+              />
+              <Textarea
+                placeholder="Description (optional)"
+                value={currentTask?.description || ""}
+                onChange={(e) => setCurrentTask(prev => ({ ...prev, description: e.target.value }))}
+              />
+              <Select
+                value={currentTask?.priority || TaskPriority.MEDIUM}
+                onChange={(e) => setCurrentTask(prev => ({ ...prev, priority: e.target.value as TaskPriority }))}
+              >
+                {Object.values(TaskPriority).map((priority) => (
+                  <option key={priority} value={priority}>
+                    {priority}
+                  </option>
+                ))}
+              </Select>
+              <Input
+                placeholder="Assigned to (email)"
+                value={currentTask?.assignedTo || ""}
+                onChange={(e) => setCurrentTask(prev => ({ ...prev, assignedTo: e.target.value }))}
+              />
+            </VStack>
           </ModalBody>
           <ModalFooter>
             <Button variant="ghost" mr={3} onClick={onClose}>

@@ -10,20 +10,17 @@ export enum TaskPriority {
   HIGH = 'HIGH'
 }
 
-
-
 export interface Task {
   id: string;
   title: string;
   description?: string;
   status: TaskStatus;
   priority: TaskPriority;
-  dueDate?: string;
   assignedTo: string;
   createdBy: string;
-  order?: number;
-  createdAt: string;
-  updatedAt: string;
+  order: number;
+  createdAt?: Date;
+  updatedAt?: Date;
 }
 
 export interface TaskWithUser extends Task {
