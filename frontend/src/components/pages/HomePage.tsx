@@ -19,6 +19,8 @@ import ThemeSelector from '../selectors/ThemeSelector';
 import BannerSelector from '../selectors/BannerSelector';
 import { themes } from '../design/Themes';
 
+import Board from '../tasks/dnd/board';
+
 type ThemeType = 'Light' | 'Ash' | 'Dark' | 'Oxyn';
 type BannerType = "Breezy" | "Particles" | "Pattern" | "Hexagon";
 
@@ -103,7 +105,8 @@ const HomePage = () => {
       )}
 
       <Box flex={1} p={20} overflowY={"auto"}>
-        <TaskList light={dark} dark={light} fontColor={fontColor} />
+        {/* <TaskList light={dark} dark={light} fontColor={fontColor} /> */}
+        <Board  />
       </Box>
 
       <ThemeSelector setTheme={setTheme} />

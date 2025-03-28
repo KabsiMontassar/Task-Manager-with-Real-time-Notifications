@@ -59,6 +59,6 @@ assignedTo: string;
   @Column({ nullable: true })
   dueDate: Date;
 
-  @Column({ nullable: true , default: true})
+  @Column({ type: 'boolean', nullable: true, default: true })
   active: boolean;
 }
