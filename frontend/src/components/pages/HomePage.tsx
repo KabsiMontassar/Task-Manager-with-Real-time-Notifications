@@ -67,6 +67,8 @@ const HomePage = () => {
     setFontColor(themes[theme]?.fontColor || '#D8D8DB');
   }, [navigate, theme]);
 
+ 
+
   const handleLogout = () => {
     authService.logout();
     navigate('/login');
@@ -102,8 +104,8 @@ const HomePage = () => {
           <Box userSelect={"none"} gap={6} display={"flex"} flexDirection={"column"} overflowY={"auto"}>
 
             {users.map((test) => (
-              <Tooltip userSelect={"none"} label={test.email} aria-label='A tooltip'>
-                <Flex key={test.email} style={{ display: 'flex', alignItems: 'center', padding: '3px', gap: '6px' }}>
+              <Tooltip key={test.email} userSelect={"none"} label={test.email} aria-label='A tooltip'>
+                <Flex  style={{ display: 'flex', alignItems: 'center', padding: '3px', gap: '6px' }}>
                   <Avatar name={test?.firstName + ' ' + test?.lastName} />
                   <Text color={fontColor}>
                     {Capitalize(test?.firstName) + ' ' + Capitalize(test?.lastName)}

@@ -5,7 +5,6 @@ import { AuthModule } from './auth/auth.module';
 import { TaskModule } from './task/task.module';
 import { UserModule } from './user/user.module';
 import { NotificationModule } from './notification/notification.module';
-import { WebsocketModule } from './websocket/websocket.module';
 
 @Module({
   imports: [
@@ -14,24 +13,23 @@ import { WebsocketModule } from './websocket/websocket.module';
       {
         name: 'USER_SERVICE',
         transport: Transport.TCP,
-        options: { host: 'localhost', port: 3001 }, // Adjust host and port as needed
+        options: { host: 'localhost', port: 3001 }, 
       },
       {
         name: 'TASK_SERVICE',
         transport: Transport.TCP,
-        options: { port: 3002 },
+        options: { port: 3002 }, 
       },
       {
         name: 'NOTIFICATION_SERVICE',
         transport: Transport.TCP,
-        options: { port: 3003 },
+        options: { port: 3003 }, 
       },
     ]),
     AuthModule,
     TaskModule,
     UserModule,
     NotificationModule,
-    WebsocketModule,
   ],
 })
 export class AppModule {}

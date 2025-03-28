@@ -19,9 +19,11 @@ export const API_ENDPOINTS = {
     STATUS: (id: string) => `/tasks/${id}/status`,
     ORDER: (id: string) => `/tasks/${id}/order`,
     ACTIVE: (id: string) => `/tasks/${id}/active`,
+    BATCH_UPDATE_ORDERS: '/tasks/batch-update-orders',
   },
   NOTIFICATIONS: {
     BASE: '/notifications',
     BY_ID: (id: string) => `/notifications/${id}`,
+    USER: '/notifications/user',
   },
 };

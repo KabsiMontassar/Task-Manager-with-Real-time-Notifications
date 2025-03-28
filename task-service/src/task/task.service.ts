@@ -60,9 +60,11 @@ export class TaskService {
   }
 
   async updateTaskOrder(id: string, newOrder: number): Promise<Task> {
-    const task = await this.findOne(id);
-    task.order = newOrder;
-    return await this.taskRepository.save(task);
+    const result = await this.taskRepository.update(id, { order: newOrder });
+    if (result.affected === 0) {
+      throw new NotFoundException(`Task with ID ${id} not found`);
+    }
+    return this.findOne(id); // Fetch updated task if needed
   }
 
   async getTasksByAssignee(userId: string): Promise<Task[]> {
@@ -76,16 +78,15 @@ export class TaskService {
   }
 
   async updateTaskStatus(id: string, status: string): Promise<Task> {
-    const task = await this.findOne(id);
-
     if (!Object.values(TaskStatus).includes(status as TaskStatus)) {
       throw new BadRequestException(`Invalid status: ${status}`);
     }
-    task.status = status as TaskStatus;
-    task.updatedAt = new Date();
-    return this.taskRepository.save(task);
+    const result = await this.taskRepository.update(id, { status: status as TaskStatus, updatedAt: new Date() });
+    if (result.affected === 0) {
+      throw new NotFoundException(`Task with ID ${id} not found`);
+    }
+    return this.findOne(id); // Fetch updated task if needed
   }
-
 
   async updateTaskActive(id: string): Promise<Task> {
     const task = await this.findOne(id);

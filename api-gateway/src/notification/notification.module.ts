@@ -11,13 +11,19 @@ import { NotificationService } from './notification.service';
         transport: Transport.TCP,
         options: {
           host: process.env.NOTIFICATION_SERVICE_HOST || 'localhost',
-          port: parseInt(process.env.NOTIFICATION_SERVICE_PORT || "3003" ),
+          port: parseInt(process.env.NOTIFICATION_SERVICE_PORT || "3003"),
         },
       },
     ]),
   ],
   controllers: [NotificationController],
-  providers: [NotificationService],
+  providers: [
+    NotificationService,
+    {
+      provide: 'NOTIFICATION_CLIENT',
+      useExisting: 'NOTIFICATION_SERVICE', // Use the existing NOTIFICATION_SERVICE client
+    },
+  ],
   exports: [NotificationService],
 })
 export class NotificationModule {}

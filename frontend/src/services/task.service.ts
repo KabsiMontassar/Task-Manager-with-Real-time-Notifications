@@ -105,7 +105,6 @@ class TaskService {
     }
   }
 
-
   async updateTaskActive(id: string): Promise<Task> {
     try {
       const response = await api.put<Task>(API_ENDPOINTS.TASKS.ACTIVE(id));
@@ -119,16 +118,6 @@ class TaskService {
     }
   }
 
-
-
-
-
-
-
-
-
-
-
   async updateTaskOrder(id: string, order: number): Promise<Task> {
     try {
       const response = await api.put<Task>(API_ENDPOINTS.TASKS.ORDER(id), { order : order });
@@ -138,6 +127,18 @@ class TaskService {
         throw new Error(`Failed to update task order: ${error.message}`);
       } else {
         throw error;
+      }
+    }
+  }
+
+  async updateTaskOrders(tasks: { id: string; order: number }[]): Promise<void> {
+    try {
+      await api.put(API_ENDPOINTS.TASKS.BATCH_UPDATE_ORDERS, { tasks });
+    } catch (error) {
+      if (error instanceof Error) {
+        throw new Error(`Failed to update task orders: ${error.message}`);
+      } else {
+        throw new Error('Failed to update task orders: An unknown error occurred.');
       }
     }
   }

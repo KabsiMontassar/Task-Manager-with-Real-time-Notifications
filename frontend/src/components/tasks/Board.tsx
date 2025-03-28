@@ -76,20 +76,13 @@ export const Board: React.FC<BoardProps> = ({ light, dark, fontColor }) => {
   const fetchTasks = async () => {
     try {
       const tasks = await taskService.getAllTasks();
-      const activeTasks = tasks.filter(task => task.active !== false);
-
-      const groupedTasks = activeTasks.reduce((acc, task) => {
+      const groupedTasks = tasks.reduce((acc, task) => {
         acc[task.status] = [...(acc[task.status] || []), task];
         return acc;
       }, { TODO: [], IN_PROGRESS: [], DONE: [] } as BoardData);
 
-      Object.keys(groupedTasks).forEach(status => {
-        groupedTasks[status as TaskStatus].sort((a, b) => (a.order ?? 0) - (b.order ?? 0));
-      });
-
-      setBoardData(groupedTasks);
+      setBoardData(groupedTasks); // Assume backend returns sorted tasks
     } catch (error) {
-      console.error("Failed to fetch tasks:", error);
       toast({
         title: "Error fetching tasks",
         description: error instanceof Error ? error.message : "An error occurred",
@@ -210,7 +203,6 @@ export const Board: React.FC<BoardProps> = ({ light, dark, fontColor }) => {
       await taskService.updateTaskStatus(activeId, destinationColumn);
       await updateTaskOrders(boardData[destinationColumn]);
     } catch (error) {
-      console.error("Failed to update task:", error);
       toast({
         title: "Error updating task",
         description: error instanceof Error ? error.message : "An error occurred",
@@ -218,7 +210,6 @@ export const Board: React.FC<BoardProps> = ({ light, dark, fontColor }) => {
         duration: 5000,
         isClosable: true,
       });
-      fetchTasks();
     }
   };
 
