@@ -44,6 +44,8 @@ export const DeleteZone: React.FC<DeleteZoneProps> = ({ onDelete }) => {
       border="2px dashed"
       borderColor="red.500"
       textAlign="center"
+
+    
     >
       <Text fontWeight="bold" color="red.500">
         Drop here to delete task

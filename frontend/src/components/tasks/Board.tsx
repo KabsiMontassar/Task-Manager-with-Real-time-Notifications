@@ -29,7 +29,6 @@ import {
 import { taskService } from "../../services/task.service";
 import { Task as TaskType, TaskStatus, TaskPriority } from "../../types/task";
 import Column from "./Column";
-import DatePicker from "react-datepicker";
 import "react-datepicker/dist/react-datepicker.css";
 import { ArchiveZone } from "./ArchiveZone";
 import { DeleteZone } from "./DeleteZone";
@@ -108,7 +107,6 @@ export const Board: React.FC<BoardProps> = ({ light, dark, fontColor }) => {
 
     const activeId = active.id as string;
     const overId = over.id as string;
-    console.log("activeId", activeId, "overId", overId);
     const sourceColumn = Object.keys(boardData).find(status =>
       boardData[status as TaskStatus].some(t => t.id === activeId)
     ) as TaskStatus;
