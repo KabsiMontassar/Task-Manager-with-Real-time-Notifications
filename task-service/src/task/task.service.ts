@@ -1,7 +1,7 @@
-import { Injectable, NotFoundException } from '@nestjs/common';
+import { Injectable, NotFoundException, BadRequestException } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Repository } from 'typeorm';
-import { Task } from '../entities/task.entity';
+import { Task , TaskStatus , TaskPriority } from '../entities/task.entity';
 import { CreateTaskDto, UpdateTaskDto, AddCommentDto } from '../dto/task.dto';
 import { v4 as uuidv4 } from 'uuid';
 
@@ -86,4 +86,17 @@ export class TaskService {
       },
     });
   }
+
+
+  async updateTaskStatus(id: string, status: string): Promise<Task> {
+    const task = await this.findOne(id);
+
+    if (!Object.values(TaskStatus).includes(status as TaskStatus)) {
+        throw new BadRequestException(`Invalid status: ${status}`);
+    }
+    task.status = status as TaskStatus;
+    task.updatedAt = new Date();
+    return this.taskRepository.save(task);
+}
+
 }

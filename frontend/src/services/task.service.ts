@@ -19,18 +19,22 @@ export const taskService = {
     api.put<Task>(API_ENDPOINTS.TASKS.BY_ID(id), task).then(res => res.data), 
 
   updateTaskStatus: (id: string, status: TaskStatus) =>
-    api.patch<Task>(API_ENDPOINTS.TASKS.BY_ID(id), { status }).then(res => res.data),
+    api.put<Task>(API_ENDPOINTS.TASKS.STATUS(id), { status }).then(res => res.data),
+
+
+  updateTaskOrder: (id: string, newOrder: number) =>
+    api.put<Task>(API_ENDPOINTS.TASKS.ORDER(id), { order: newOrder }).then(res => res.data),
 
   deleteTask: (id: string) =>
     api.delete(API_ENDPOINTS.TASKS.BY_ID(id)).then(res => res.data), 
 
   addComment: (taskId: string, content: string) =>
-    api.post(API_ENDPOINTS.TASKS.COMMENTS(taskId), { content }).then(res => res.data),
+    api.post(API_ENDPOINTS.TASKS.COMMENTS(taskId), { commentDto: { content } }).then(res => res.data),
 
   addAttachment: (taskId: string, file: File) => {
     const formData = new FormData();
     formData.append('file', file);
-    return api.post(API_ENDPOINTS.TASKS.ATTACHMENTS(taskId), formData, {
+    return  api.post(API_ENDPOINTS.TASKS.ATTACHMENTS(taskId), formData, {
       headers: { 'Content-Type': 'multipart/form-data' }
     }).then(res => res.data);
   },

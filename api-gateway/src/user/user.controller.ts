@@ -1,8 +1,8 @@
-import { Controller, Get,Put, Param, UseGuards } from '@nestjs/common';
+import { Controller, Get, Put, Param, UseGuards } from '@nestjs/common';
 import { UserService } from './user.service';
 import { JwtAuthGuard } from '../auth/jwt-auth.guard';
 import { Request } from 'express';
-import { Req,Body } from '@nestjs/common';
+import { Req, Body } from '@nestjs/common';
 
 @Controller('users')
 @UseGuards(JwtAuthGuard)
@@ -20,17 +20,16 @@ export class UserController {
     return result;
   }
 
-  @Get(':id')
-  async findOne(@Param('id') id: string) {
-    return this.userService.findOne(id);
+  @Get('me/:userId')
+  async getUserById(@Param('userId') userId: string) {
+    console.log('Getting user by ID:', userId);
+    return this.userService.findById(userId);
   }
 
   @Put(':id')
   async update(@Param('id') id: string, @Body() updateUserDto: any) {
     return this.userService.update(id, updateUserDto);
   }
-
- 
 
   @Put(':id/password')
   @UseGuards(JwtAuthGuard)

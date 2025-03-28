@@ -27,10 +27,9 @@ export class TaskController {
   async findAll() {
     return this.taskClient.send({ cmd: 'findAllTasks' }, {});
   }
-
   @Get(':id')
   async findOne(@Param('id') id: string) {
-    return this.taskClient.send({ cmd: 'findOneTask' }, id);
+      return this.taskClient.send({ cmd: 'findOneTask' }, { id }); 
   }
 
   @Put(':id')

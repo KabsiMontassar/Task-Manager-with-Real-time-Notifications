@@ -91,4 +91,9 @@ export class UserService {
 
         return { success: true, message: 'Password updated successfully' };
     }
+
+
+    async findByEmail(email: string): Promise<UserDocument> {
+        return this.userModel.findOne({ email }).select('-password');
+    }
 }

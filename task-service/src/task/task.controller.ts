@@ -44,6 +44,15 @@ export class TaskController {
     return this.taskService.updateTaskOrder(id, newOrder);
   }
 
+  @MessagePattern({ cmd: 'updateTaskStatus'})
+  updateStatus(@Payload() { id, status }: { id: string; status: string; userId: string }) {
+    return this.taskService.updateTaskStatus(id, status);
+  }
+
+
+
+
+
   @MessagePattern({ cmd: 'getTasksByAssignee' })
   getTasksByAssignee(@Payload() userId: string) {
     return this.taskService.getTasksByAssignee(userId);

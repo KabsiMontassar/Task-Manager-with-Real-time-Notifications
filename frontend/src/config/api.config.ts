@@ -17,7 +17,10 @@ export const API_ENDPOINTS = {
     BY_ID: (id: string) => `/tasks/${id}`, 
     DETAILS: (id: string) => `/tasks/${id}/details`,
     COMMENTS: (id: string) => `/tasks/${id}/comments`,
+    STATUS: (id: string) => `/tasks/${id}/status`,
     ATTACHMENTS: (id: string) => `/tasks/${id}/attachments`,
+    ORDER: (id: string) => `/tasks/${id}/order`,  
+
   },
   NOTIFICATIONS: {
     BASE: '/notifications', 

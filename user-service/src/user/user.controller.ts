@@ -18,11 +18,6 @@ export class UserController {
         return this.userService.findById(req.user.userId);
     }
 
-    @MessagePattern('user_find_by_id')
-    async findByIdMicroservice(@Payload() payload: { id: string }) {
-        return this.userService.findById(payload.id);
-    }
-
     @Get()
     async findAll() {
         return this.userService.findAll();
@@ -47,32 +42,34 @@ export class UserController {
     @MessagePattern({ cmd: 'get_user' })
     async getUserByIdCmd(@Payload() payload: { userId: string }) {
         console.log('Received get_user command with payload:', payload);
-        const user = await this.userService.findById(payload.userId);
-        console.log('Found user:', user);
-        return user;
+        try {
+            const user = await this.userService.findById(payload.userId);
+            console.log('Found user:', user);
+            return user;
+        } catch (error) {
+            console.error('Error finding user:', error);
+            throw error;
+        }
     }
 
-    @MessagePattern('user_get_profile')
-    async getProfileMicroservice(@Payload() payload: { userId: string }) {
-        console.log('Received user_get_profile request with payload:', payload);
-        const user = await this.userService.findById(payload.userId);
-        console.log('Found user:', user);
-        return user;
+    @MessagePattern('user_find_by_email')
+    async findByEmailMicroservice(@Payload() payload: { email: string }) {
+        return this.userService.findByEmail(payload.email);
     }
 
     @MessagePattern('user_update')
-    async updateUserMicroservice(@Payload() payload: { id: string; data: UpdateUserDto }) {
-        console.log('Received user_update request with payload:', payload);
-        const user = await this.userService.update(payload.id, payload.data);
-        console.log('Updated user:', user);
-        return user;
+    async updateMicroservice(@Payload() payload: { id: string; data: UpdateUserDto }) {
+        return this.userService.update(payload.id, payload.data);
+    }
+
+    @MessagePattern('user_delete')
+    async deleteMicroservice(@Payload() payload: { id: string }) {
+        await this.userService.delete(payload.id);
+        return { message: 'User deleted successfully' };
     }
 
     @MessagePattern('user_update_password')
     async updatePasswordMicroservice(@Payload() payload: { id: string; data: any }) {
-        console.log('Received user_update_password request with payload:', payload);
-        const result = await this.userService.updatePassword(payload.id, payload.data);
-        console.log('Updated password for user:', payload.id);
-        return result;
+        return this.userService.updatePassword(payload.id, payload.data);
     }
 }
