@@ -4,7 +4,7 @@ import HomePage from './components/pages/HomePage';
 import Login from './components/auth/Login';
 import Register from './components/auth/Register';
 import ProtectedRoute from './components/auth/ProtectedRoute';
-import { ThemeProvider } from './context/ThemeContext'; // Import ThemeProvider
+import { ThemeProvider } from './context/ThemeContext'; 
 import './App.css';
 
 const queryClient = new QueryClient({
@@ -19,7 +19,7 @@ const queryClient = new QueryClient({
 function App() {
   return (
     <QueryClientProvider client={queryClient}>
-      <ThemeProvider> {/* Wrap the application with ThemeProvider */}
+      <ThemeProvider>
         <BrowserRouter>
           <Routes>
             <Route path="/login" element={<Login />} />

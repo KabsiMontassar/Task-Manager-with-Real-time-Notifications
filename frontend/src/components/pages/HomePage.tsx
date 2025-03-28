@@ -16,7 +16,6 @@ import Pattern from '../design/Pattern';
 import Hexagon from '../design/Hexagon';
 import ThemeSelector from '../selectors/ThemeSelector';
 import BannerSelector from '../selectors/BannerSelector';
-import {Chat} from '../chat/Chat';
 
 import Board from '../tasks/Board';
 
@@ -107,8 +106,7 @@ const HomePage = () => {
         </Flex>
       )}
       <Box flex={1} p={20} overflowY="auto">
-        <Board  fontColor="var(--font-color)" />
-        <Chat />
+        <Board   />
       </Box>
       <ThemeSelector />
 
@@ -128,7 +126,7 @@ const HomePage = () => {
                 </Box>
               </Box>
               <Box>
-                {user && <Profile user={user}  fontColor="var(--font-color)" onSave={handleProfileSave} />}
+                {user && <Profile user={user}  onSave={handleProfileSave} />}
               </Box>
             </VStack>
           </DrawerBody>

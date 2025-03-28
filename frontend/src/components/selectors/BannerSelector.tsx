@@ -11,7 +11,6 @@ import {
 } from "@chakra-ui/react";
 import { ChevronDownIcon, CheckIcon } from "@chakra-ui/icons";
 
-// Define banner types
 type BannerType = "Breezy" | "Particles" | "Pattern" | "Hexagon";
 
 const BannerSelector = ({

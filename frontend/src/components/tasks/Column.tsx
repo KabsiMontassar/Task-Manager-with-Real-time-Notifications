@@ -25,7 +25,6 @@ interface ColumnProps {
   onEditTask: (task: TaskType) => void;
   onDeleteTask: (id: string) => void;
  
-  fontColor: string;
 }
 
 const Column: React.FC<ColumnProps> = ({
@@ -35,7 +34,6 @@ const Column: React.FC<ColumnProps> = ({
   onEditTask,
   onDeleteTask,
 
-  fontColor
 }) => {
   const { setNodeRef } = useDroppable({ id: status });
   
@@ -73,7 +71,7 @@ const Column: React.FC<ColumnProps> = ({
           <Text
             ml={2}
             fontSize="sm"
-            color={fontColor}
+            color="var(--font-color)"
           >
             ({tasks.length})
           </Text>
@@ -96,7 +94,7 @@ const Column: React.FC<ColumnProps> = ({
             <Task
 
             
-              fontColor={fontColor}
+          
 
 
               key={task.id}
@@ -109,7 +107,7 @@ const Column: React.FC<ColumnProps> = ({
             <Box
               p={4}
               textAlign="center"
-              color={fontColor}
+              color="var(--font-color)"
               bg="var(--light-color)"
               
               boxShadow="sm"

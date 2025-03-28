@@ -52,12 +52,8 @@ export const statusLabels: Record<TaskStatus, string> = {
   DONE: "Done",
 };
 
-export interface BoardProps {
- 
-  fontColor: string;
-}
 
-export const Board: React.FC<BoardProps> = ({  fontColor }) => {
+export const Board: React.FC = () => {
   const [boardData, setBoardData] = useState<BoardData>({
     TODO: [],
     IN_PROGRESS: [],
@@ -345,7 +341,7 @@ export const Board: React.FC<BoardProps> = ({  fontColor }) => {
 
   return (
     <Box p={4}>
-      <Heading color={fontColor} size="lg" mb={6} textAlign="center">
+      <Heading color="var(--font-color)" size="lg" mb={6} textAlign="center">
         Task Board
       </Heading>
       <DndContext
@@ -363,9 +359,6 @@ export const Board: React.FC<BoardProps> = ({  fontColor }) => {
           {statusOrder.map((status) => (
             <Column
             
-              fontColor={fontColor}
-
-
               key={status}
               status={status}
               tasks={boardData[status]}

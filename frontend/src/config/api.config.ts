@@ -1,5 +1,4 @@
 export const API_BASE_URL = 'http://localhost:3000';
-export const WS_BASE_URL = 'ws://localhost:3001'; // Ensure this matches the WebSocket server port
 
 export const API_ENDPOINTS = {
   AUTH: {
@@ -20,10 +19,5 @@ export const API_ENDPOINTS = {
     ORDER: (id: string) => `/tasks/${id}/order`,
     ACTIVE: (id: string) => `/tasks/${id}/active`,
     BATCH_UPDATE_ORDERS: '/tasks/batch-update-orders',
-  },
-  NOTIFICATIONS: {
-    BASE: '/notifications',
-    BY_ID: (id: string) => `/notifications/${id}`,
-    USER: '/notifications/user',
-  },
+  }
 };

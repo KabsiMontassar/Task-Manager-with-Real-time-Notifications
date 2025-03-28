@@ -22,10 +22,9 @@ interface TaskProps {
   task: TaskType;
   onEdit: (task: TaskType) => void;
   onDelete: (id: string) => void;
-  fontColor: string;
 }
 
-const Task: React.FC<TaskProps> = ({ task, fontColor }) => {
+const Task: React.FC<TaskProps> = ({ task }) => {
   const {
     attributes,
     listeners,
@@ -71,7 +70,7 @@ const Task: React.FC<TaskProps> = ({ task, fontColor }) => {
           <VStack align="stretch" spacing={2}>
             <Flex justify="space-between" align="center">
               <Tooltip label={task.title} placement="top-start">
-                <Text color={fontColor} fontWeight="medium" noOfLines={1}>{task.title}</Text>
+                <Text color="var(--font-color)" fontWeight="medium" noOfLines={1}>{task.title}</Text>
               </Tooltip>
            
             </Flex>

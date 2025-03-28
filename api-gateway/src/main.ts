@@ -1,6 +1,5 @@
 import { NestFactory } from '@nestjs/core';
 import { AppModule } from './app.module';
-import { IoAdapter } from '@nestjs/platform-socket.io';
 
 async function bootstrap() {
   const app = await NestFactory.create(AppModule);
@@ -12,10 +11,7 @@ async function bootstrap() {
     credentials: true,
   });
 
-  // Use IoAdapter for WebSocket support
-  app.useWebSocketAdapter(new IoAdapter(app));
-
-  // Ensure the API Gateway listens on a different port than the WebSocket server
-  await app.listen(process.env.PORT ?? 3000); // Change to a different port, e.g., 3001
+  // Ensure the API Gateway listens on its designated port
+  await app.listen(process.env.PORT ?? 3000);
 }
 bootstrap();

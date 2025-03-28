@@ -9,7 +9,7 @@ interface ThemeContextProps {
 
 const ThemeContext = createContext<ThemeContextProps | undefined>(undefined);
 
-const themes = {
+export const themes = {
   "Light": {
     dark: "#F3F3F4",
     light: "#FBFBFB",

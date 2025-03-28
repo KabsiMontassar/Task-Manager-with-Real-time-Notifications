@@ -1,6 +1,6 @@
 import { Box, Circle, Tooltip, Icon } from '@chakra-ui/react';
 import { CheckIcon } from '@chakra-ui/icons';
-import { themes } from '../design/Themes';
+import { themes } from '../../context/ThemeContext';
 import { useTheme } from '../../context/ThemeContext';
 
 const ThemeSelector = () => {
