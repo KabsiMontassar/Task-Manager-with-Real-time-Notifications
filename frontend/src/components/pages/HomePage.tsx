@@ -19,7 +19,7 @@ import ThemeSelector from '../selectors/ThemeSelector';
 import BannerSelector from '../selectors/BannerSelector';
 import { themes } from '../design/Themes';
 
-import Board from '../tasks/dnd/board';
+import Board from '../tasks/Board';
 
 type ThemeType = 'Light' | 'Ash' | 'Dark' | 'Oxyn';
 type BannerType = "Breezy" | "Particles" | "Pattern" | "Hexagon";

@@ -39,8 +39,8 @@ import {
 import { CSS } from "@dnd-kit/utilities";
 import { useDroppable } from "@dnd-kit/core";
 import { AddIcon, DeleteIcon, EditIcon } from "@chakra-ui/icons";
-import { taskService } from "../../../services/task.service";
-import { Task as TaskType, TaskStatus } from "../../../types/task";
+import { taskService } from "../../services/task.service";
+import { Task as TaskType, TaskStatus } from "../../types/task";
 
 interface BoardData {
   [status: string]: TaskType[];
