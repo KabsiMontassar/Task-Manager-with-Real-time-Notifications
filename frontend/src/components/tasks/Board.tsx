@@ -48,7 +48,13 @@ export const statusLabels: Record<TaskStatus, string> = {
   DONE: "Done",
 };
 
-export const Board: React.FC = () => {
+export interface BoardProps {
+  light: string;
+  dark: string;
+  fontColor: string;
+}
+
+export const Board: React.FC<BoardProps> = ({ light, dark, fontColor }) => {
   const [boardData, setBoardData] = useState<BoardData>({
     TODO: [],
     IN_PROGRESS: [],
@@ -66,8 +72,9 @@ export const Board: React.FC = () => {
   const fetchTasks = async () => {
     try {
       const tasks = await taskService.getAllTasks();
-      console.log(tasks)
-      const groupedTasks = tasks.reduce((acc, task) => {
+      const activeTasks = tasks.filter(task => task.active !== false);
+
+      const groupedTasks = activeTasks.reduce((acc, task) => {
         acc[task.status] = [...(acc[task.status] || []), task];
         return acc;
       }, { TODO: [], IN_PROGRESS: [], DONE: [] } as BoardData);
@@ -97,7 +104,7 @@ export const Board: React.FC = () => {
 
     const activeId = active.id as string;
     const overId = over.id as string;
-
+    console.log("activeId", activeId, "overId", overId);
     const sourceColumn = Object.keys(boardData).find(status =>
       boardData[status as TaskStatus].some(t => t.id === activeId)
     ) as TaskStatus;
@@ -171,6 +178,7 @@ export const Board: React.FC = () => {
     });
 
     try {
+      console.log("Moving task from", activeId, "to", destinationColumn);
       await taskService.updateTaskStatus(activeId, destinationColumn);
       await updateTaskOrders(boardData[destinationColumn]);
     } catch (error) {
@@ -292,7 +300,7 @@ export const Board: React.FC = () => {
 
   return (
     <Box p={4}>
-      <Heading size="lg" mb={6} textAlign="center">
+      <Heading color={fontColor} size="lg" mb={6} textAlign="center">
         Task Board
       </Heading>
       <DndContext
@@ -304,9 +312,15 @@ export const Board: React.FC = () => {
           align={{ base: "center", md: "flex-start" }}
           overflowX="auto"
           pb={4}
+         
         >
           {statusOrder.map((status) => (
             <Column
+              dark={dark}
+              light={light}
+              fontColor={fontColor}
+
+
               key={status}
               status={status}
               tasks={boardData[status]}

@@ -2,7 +2,6 @@ import React from "react";
 import {
   Box,
   Flex,
-  useColorModeValue,
   Badge,
   IconButton,
   Text,
@@ -25,6 +24,9 @@ interface ColumnProps {
   onAddTask: (status: TaskStatus) => void;
   onEditTask: (task: TaskType) => void;
   onDeleteTask: (id: string) => void;
+  dark: string;
+  light: string;
+  fontColor: string;
 }
 
 const Column: React.FC<ColumnProps> = ({
@@ -33,41 +35,31 @@ const Column: React.FC<ColumnProps> = ({
   onAddTask,
   onEditTask,
   onDeleteTask,
+  dark,
+  light,
+  fontColor
 }) => {
-  const { setNodeRef, isOver } = useDroppable({ id: status });
-  const bgColor = useColorModeValue("gray.100", "gray.800");
-  const hoverBgColor = useColorModeValue("gray.200", "gray.700");
-  const borderColor = useColorModeValue("gray.200", "gray.600");
+  const { setNodeRef } = useDroppable({ id: status });
+  
 
   return (
     <Box
       ref={setNodeRef}
       flex={1}
       minW="280px"
+
       mx={2}
       p={4}
-      bg={isOver ? hoverBgColor : bgColor}
+      bg={dark}
       borderRadius="lg"
-      borderWidth="1px"
-      borderStyle="solid"
-      borderColor={borderColor}
+      boxShadow="md"
+      
       transition="all 0.2s"
       position="relative"
       height="fit-content"
       maxH="calc(100vh - 200px)"
       overflowY="auto"
-      css={{
-        "&::-webkit-scrollbar": {
-          width: "4px",
-        },
-        "&::-webkit-scrollbar-track": {
-          width: "6px",
-        },
-        "&::-webkit-scrollbar-thumb": {
-          background: useColorModeValue("gray.300", "gray.600"),
-          borderRadius: "24px",
-        },
-      }}
+      
     >
       <Flex align="center" mb={4} justify="space-between">
         <Flex align="center">
@@ -83,7 +75,7 @@ const Column: React.FC<ColumnProps> = ({
           <Text
             ml={2}
             fontSize="sm"
-            color={useColorModeValue("gray.500", "gray.400")}
+            color={fontColor}
           >
             ({tasks.length})
           </Text>
@@ -96,12 +88,7 @@ const Column: React.FC<ColumnProps> = ({
             onClick={() => onAddTask(status)}
             colorScheme={statusColors[status]}
             variant="ghost"
-            _hover={{
-              bg: useColorModeValue(
-                `${statusColors[status]}.100`,
-                `${statusColors[status]}.800`
-              ),
-            }}
+           
           />
         </Tooltip>
       </Flex>
@@ -109,6 +96,12 @@ const Column: React.FC<ColumnProps> = ({
         <Box minH="50px">
           {tasks.map((task) => (
             <Task
+
+              dark={dark}
+              light={light}
+              fontColor={fontColor}
+
+
               key={task.id}
               task={task}
               onEdit={onEditTask}
@@ -119,8 +112,10 @@ const Column: React.FC<ColumnProps> = ({
             <Box
               p={4}
               textAlign="center"
-              color={useColorModeValue("gray.400", "gray.500")}
-              bg={useColorModeValue("gray.50", "gray.900")}
+              color={fontColor}
+              bg={light}
+              
+              boxShadow="sm"
               borderRadius="md"
               fontSize="sm"
             >

@@ -2,7 +2,6 @@ import { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { authService } from '../../services/auth.service';
 import { userService } from '../../services/user.service';
-import { TaskList } from '../tasks/TaskList';
 import {
   Flex, IconButton, Button, Avatar, Text, Box,
   Drawer, DrawerBody, VStack, DrawerOverlay,
@@ -27,7 +26,7 @@ type BannerType = "Breezy" | "Particles" | "Pattern" | "Hexagon";
 const HomePage = () => {
   const navigate = useNavigate();
   const [user, setUser] = useState<User | null>(null);
-  const [users, setUsers] = useState<User[]>([]);
+  //const [users, setUsers] = useState<User[]>([]);
   const [loading, setLoading] = useState(true);
 
   const { isOpen: isDrawerOpen, onOpen: onDrawerOpen, onClose: onDrawerClose } = useDisclosure();
@@ -105,7 +104,7 @@ const HomePage = () => {
       )}
 
       <Box flex={1} p={20} overflowY={"auto"}>
-        <Board  />
+        <Board   light={light} dark={dark} fontColor={fontColor} />
       </Box>
 
       <ThemeSelector setTheme={setTheme} />
@@ -128,7 +127,7 @@ const HomePage = () => {
                 </Box>
               </Box>
               <Box>
-                {user && <Profile user={user} light={dark} dark={light} fontColor={fontColor} />}
+                {user && <Profile user={user} light={light} dark={dark} fontColor={fontColor} />}
               </Box>
             </VStack>
           </DrawerBody>

@@ -1,5 +1,6 @@
 import api from './api.service';
 import { Task, TaskStatus, TaskPriority } from '../types/task';
+import axios from 'axios';
 import { API_ENDPOINTS } from '../config/api.config';
 
 interface CreateTaskDto {
@@ -85,7 +86,7 @@ class TaskService {
 
   async updateTaskStatus(id: string, status: TaskStatus): Promise<Task> {
     try {
-      const response = await api.patch<Task>(API_ENDPOINTS.TASKS.STATUS(id), { status });
+      const response = await api.put<Task>(API_ENDPOINTS.TASKS.STATUS(id), { status : status });
       return response.data;
     } catch (error) {
       if (axios.isAxiosError(error)) {
@@ -98,7 +99,7 @@ class TaskService {
 
   async updateTaskOrder(id: string, order: number): Promise<Task> {
     try {
-      const response = await api.patch<Task>(API_ENDPOINTS.TASKS.ORDER(id), { order });
+      const response = await api.put<Task>(API_ENDPOINTS.TASKS.ORDER(id), { order : order });
       return response.data;
     } catch (error) {
       if (axios.isAxiosError(error)) {

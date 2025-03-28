@@ -2,16 +2,11 @@ import React from "react";
 import {
   Box,
   Flex,
-  useColorModeValue,
   Badge,
   Card,
   CardBody,
-  IconButton,
   Text,
-  Menu,
-  MenuButton,
-  MenuList,
-  MenuItem,
+  IconButton,
   VStack,
   Tooltip,
   Avatar,
@@ -21,7 +16,7 @@ import {
   useSortable,
 } from "@dnd-kit/sortable";
 import { CSS } from "@dnd-kit/utilities";
-import { DeleteIcon, EditIcon } from "@chakra-ui/icons";
+import { DeleteIcon } from "@chakra-ui/icons";
 import { Task as TaskType } from "../../types/task";
 import { format } from "date-fns";
 
@@ -29,9 +24,12 @@ interface TaskProps {
   task: TaskType;
   onEdit: (task: TaskType) => void;
   onDelete: (id: string) => void;
+  dark: string;
+  light: string;
+  fontColor: string;
 }
 
-const Task: React.FC<TaskProps> = ({ task, onEdit, onDelete }) => {
+const Task: React.FC<TaskProps> = ({ task, onDelete, light, fontColor }) => {
   const {
     attributes,
     listeners,
@@ -65,7 +63,7 @@ const Task: React.FC<TaskProps> = ({ task, onEdit, onDelete }) => {
       role="group"
     >
       <Card
-        bg={useColorModeValue("white", "gray.700")}
+        bg={light}
         boxShadow="sm"
         _hover={{ boxShadow: "md", transform: "translateY(-2px)" }}
         transition="all 0.2s"
@@ -77,34 +75,16 @@ const Task: React.FC<TaskProps> = ({ task, onEdit, onDelete }) => {
           <VStack align="stretch" spacing={2}>
             <Flex justify="space-between" align="center">
               <Tooltip label={task.title} placement="top-start">
-                <Text fontWeight="medium" noOfLines={1}>{task.title}</Text>
+                <Text color={fontColor} fontWeight="medium" noOfLines={1}>{task.title}</Text>
               </Tooltip>
-              <Menu>
-                <Tooltip label="Task actions">
-                  <MenuButton
-                    as={IconButton}
-                    aria-label="Task actions"
-                    icon={<EditIcon />}
-                    variant="ghost"
-                    size="sm"
-                    onClick={(e) => e.stopPropagation()}
-                    opacity={0}
-                    _groupHover={{ opacity: 1 }}
-                  />
-                </Tooltip>
-                <MenuList>
-                  <MenuItem icon={<EditIcon />} onClick={() => onEdit(task)}>
-                    Edit
-                  </MenuItem>
-                  <MenuItem
-                    icon={<DeleteIcon />}
-                    onClick={() => onDelete(task.id)}
-                    color="red.500"
-                  >
-                    Delete
-                  </MenuItem>
-                </MenuList>
-              </Menu>
+              <IconButton
+                bg={"none"}
+                _hover={{ bg: "none" }}
+                aria-label="Delete Task"
+                icon={<DeleteIcon />}
+                onClick={() => onDelete(task.id)}
+                color="red.500"
+              />
             </Flex>
             {task.description && (
               <Tooltip label={task.description}>
