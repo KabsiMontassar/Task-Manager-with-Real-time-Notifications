@@ -16,11 +16,13 @@ export const taskService = {
     api.put<Task>(API_ENDPOINTS.TASKS.BY_ID(id), task).then(res => res.data),
 
   updateTaskStatus: (id: string, status: TaskStatus) =>
-    api.put<Task>(API_ENDPOINTS.TASKS.STATUS(id), { status: { status } }).then(res => res.data),
+    api.put<Task>(API_ENDPOINTS.TASKS.STATUS(id), { status: status }).then(res => res.data),
 
   updateTaskOrder: (id: string, newOrder: number) =>
     api.put<Task>(API_ENDPOINTS.TASKS.ORDER(id), { order: newOrder }).then(res => res.data),
 
   deleteTask: (id: string) =>
     api.delete(API_ENDPOINTS.TASKS.BY_ID(id)).then(res => res.data),
+
+  
 };
