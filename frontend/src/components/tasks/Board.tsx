@@ -1,14 +1,8 @@
-// src/components/tasks/dnd/Board.tsx
 import React, { useState, useEffect } from "react";
 import {
   Box,
   Flex,
   Heading,
-  useColorModeValue,
-  Badge,
-  Card,
-  CardBody,
-  IconButton,
   Input,
   useDisclosure,
   Modal,
@@ -19,11 +13,10 @@ import {
   ModalBody,
   ModalFooter,
   Button,
-  Text,
-  Menu,
-  MenuButton,
-  MenuList,
-  MenuItem,
+  Select,
+  Textarea,
+  useToast,
+  VStack,
 } from "@chakra-ui/react";
 import {
   DndContext,
@@ -31,16 +24,13 @@ import {
   DragEndEvent,
 } from "@dnd-kit/core";
 import {
-  SortableContext,
-  useSortable,
   arrayMove,
-  verticalListSortingStrategy,
 } from "@dnd-kit/sortable";
-import { CSS } from "@dnd-kit/utilities";
-import { useDroppable } from "@dnd-kit/core";
-import { AddIcon, DeleteIcon, EditIcon } from "@chakra-ui/icons";
-import { taskService } from "../../../services/task.service";
-import { Task as TaskType, TaskStatus } from "../../../types/task";
+import { taskService } from "../../services/task.service";
+import { Task as TaskType, TaskStatus, TaskPriority } from "../../types/task";
+import Column from "./Column";
+import DatePicker from "react-datepicker";
+import "react-datepicker/dist/react-datepicker.css";
 
 interface BoardData {
   [status: string]: TaskType[];
@@ -48,136 +38,25 @@ interface BoardData {
 
 const statusOrder: TaskStatus[] = [TaskStatus.TODO, TaskStatus.IN_PROGRESS, TaskStatus.DONE];
 
-const statusColors: Record<TaskStatus, string> = {
+export const statusColors: Record<TaskStatus, string> = {
   TODO: "yellow",
   IN_PROGRESS: "blue",
   DONE: "green",
 };
 
-const statusLabels: Record<TaskStatus, string> = {
+export const statusLabels: Record<TaskStatus, string> = {
   TODO: "To Do",
   IN_PROGRESS: "In Progress",
   DONE: "Done",
 };
 
-interface TaskProps {
-  task: TaskType;
-  onEdit: (task: TaskType) => void;
-  onDelete: (id: string) => void;
+export interface BoardProps {
+  light: string;
+  dark: string;
+  fontColor: string;
 }
 
-interface ColumnProps {
-  status: TaskStatus;
-  tasks: TaskType[];
-  onAddTask: (status: TaskStatus) => void;
-  onEditTask: (task: TaskType) => void;
-  onDeleteTask: (id: string) => void;
-}
-
-const Task: React.FC<TaskProps> = ({ task, onEdit, onDelete }) => {
-  const {
-    attributes,
-    listeners,
-    setNodeRef,
-    transform,
-    transition,
-    isDragging,
-  } = useSortable({ id: task.id });
-
-  const style: React.CSSProperties = {
-    transform: CSS.Transform.toString(transform),
-    transition,
-    opacity: isDragging ? 0.5 : 1,
-    cursor: "grab",
-  };
-
-  return (
-    <Box
-      ref={setNodeRef}
-      style={style}
-      {...attributes}
-      {...listeners}
-      mb={2}
-    >
-      <Card
-        bg={useColorModeValue("white", "gray.700")}
-        boxShadow="sm"
-        _hover={{ boxShadow: "md" }}
-      >
-        <CardBody p={3}>
-          <Flex justify="space-between" align="center">
-            <Text>{task.title}</Text>
-            <Menu>
-              <MenuButton
-                as={IconButton}
-                aria-label="Task actions"
-                icon={<EditIcon />}
-                variant="ghost"
-                size="sm"
-                onClick={(e) => e.stopPropagation()}
-              />
-              <MenuList>
-                <MenuItem icon={<EditIcon />} onClick={() => onEdit(task)}>
-                  Edit
-                </MenuItem>
-                <MenuItem
-                  icon={<DeleteIcon />}
-                  onClick={() => onDelete(task.id)}
-                  color="red.500"
-                >
-                  Delete
-                </MenuItem>
-              </MenuList>
-            </Menu>
-          </Flex>
-        </CardBody>
-      </Card>
-    </Box>
-  );
-};
-
-const Column: React.FC<ColumnProps> = ({ status, tasks, onAddTask, onEditTask, onDeleteTask }) => {
-  const { setNodeRef } = useDroppable({ id: status });
-  const bgColor = useColorModeValue("gray.100", "gray.800");
-
-  return (
-    <Box
-      ref={setNodeRef}
-      flex={1}
-      minW="280px"
-      mx={2}
-      p={4}
-      bg={bgColor}
-      borderRadius="lg"
-    >
-      <Flex align="center" mb={4} justify="space-between">
-        <Flex align="center">
-          <Badge colorScheme={statusColors[status]} fontSize="md" px={3} py={1} borderRadius="full">
-            {statusLabels[status]}
-          </Badge>
-          <Box ml={2} fontSize="sm" color={useColorModeValue("gray.500", "gray.400")}>
-            ({tasks.length})
-          </Box>
-        </Flex>
-        <IconButton
-          aria-label={`Add task to ${status}`}
-          icon={<AddIcon />}
-          size="sm"
-          onClick={() => onAddTask(status)}
-        />
-      </Flex>
-      <SortableContext items={tasks.map(t => t.id)} strategy={verticalListSortingStrategy}>
-        <Box>
-          {tasks.map((task) => (
-            <Task key={task.id} task={task} onEdit={onEditTask} onDelete={onDeleteTask} />
-          ))}
-        </Box>
-      </SortableContext>
-    </Box>
-  );
-};
-
-export const Board: React.FC = () => {
+export const Board: React.FC<BoardProps> = ({ light, dark, fontColor }) => {
   const [boardData, setBoardData] = useState<BoardData>({
     TODO: [],
     IN_PROGRESS: [],
@@ -186,6 +65,7 @@ export const Board: React.FC = () => {
   const [loading, setLoading] = useState(true);
   const { isOpen, onOpen, onClose } = useDisclosure();
   const [currentTask, setCurrentTask] = useState<Partial<TaskType> | null>(null);
+  const toast = useToast();
 
   useEffect(() => {
     fetchTasks();
@@ -194,12 +74,13 @@ export const Board: React.FC = () => {
   const fetchTasks = async () => {
     try {
       const tasks = await taskService.getAllTasks();
-      const groupedTasks = tasks.reduce((acc, task) => {
+      const activeTasks = tasks.filter(task => task.active !== false);
+
+      const groupedTasks = activeTasks.reduce((acc, task) => {
         acc[task.status] = [...(acc[task.status] || []), task];
         return acc;
       }, { TODO: [], IN_PROGRESS: [], DONE: [] } as BoardData);
-      
-      // Sort tasks by order within each status
+
       Object.keys(groupedTasks).forEach(status => {
         groupedTasks[status as TaskStatus].sort((a, b) => (a.order ?? 0) - (b.order ?? 0));
       });
@@ -207,6 +88,13 @@ export const Board: React.FC = () => {
       setBoardData(groupedTasks);
     } catch (error) {
       console.error("Failed to fetch tasks:", error);
+      toast({
+        title: "Error fetching tasks",
+        description: error instanceof Error ? error.message : "An error occurred",
+        status: "error",
+        duration: 5000,
+        isClosable: true,
+      });
     } finally {
       setLoading(false);
     }
@@ -218,8 +106,7 @@ export const Board: React.FC = () => {
 
     const activeId = active.id as string;
     const overId = over.id as string;
-
-    // Find source column
+    console.log("activeId", activeId, "overId", overId);
     const sourceColumn = Object.keys(boardData).find(status =>
       boardData[status as TaskStatus].some(t => t.id === activeId)
     ) as TaskStatus;
@@ -227,14 +114,13 @@ export const Board: React.FC = () => {
     if (!sourceColumn) return;
 
     const isOverColumn = Object.keys(boardData).includes(overId);
-    const destinationColumn = (isOverColumn ? overId : 
-      Object.keys(boardData).find(status => 
+    const destinationColumn = (isOverColumn ? overId :
+      Object.keys(boardData).find(status =>
         boardData[status as TaskStatus].some(t => t.id === overId))
     ) as TaskStatus;
 
     if (!destinationColumn) return;
 
-    // Moving within the same column (sorting)
     if (sourceColumn === destinationColumn) {
       if (!isOverColumn) {
         const oldIndex = boardData[sourceColumn].findIndex(t => t.id === activeId);
@@ -242,28 +128,36 @@ export const Board: React.FC = () => {
 
         if (oldIndex !== newIndex) {
           const newItems = arrayMove(boardData[sourceColumn], oldIndex, newIndex);
-          
-          // Update local state first for responsiveness
+
           setBoardData(prev => ({
             ...prev,
             [sourceColumn]: newItems,
           }));
 
-          // Update order in backend
-          await updateTaskOrders(newItems);
+          try {
+            await updateTaskOrders(newItems);
+          } catch (error) {
+            console.error("Failed to update task order:", error);
+            toast({
+              title: "Error updating task order",
+              description: error instanceof Error ? error.message : "An error occurred",
+              status: "error",
+              duration: 5000,
+              isClosable: true,
+            });
+            fetchTasks();
+          }
         }
       }
       return;
     }
 
-    // Moving to a different column
     const taskToMove = boardData[sourceColumn].find(t => t.id === activeId);
     if (!taskToMove) return;
 
-    // Update local state first for responsiveness
     setBoardData(prev => {
       const newSourceItems = prev[sourceColumn].filter(t => t.id !== activeId);
-      
+
       let newDestinationItems = [...prev[destinationColumn]];
       if (!isOverColumn) {
         const overIndex = prev[destinationColumn].findIndex(t => t.id === overId);
@@ -285,26 +179,37 @@ export const Board: React.FC = () => {
       };
     });
 
-    // Update status and order in backend
     try {
+      console.log("Moving task from", activeId, "to", destinationColumn);
       await taskService.updateTaskStatus(activeId, destinationColumn);
       await updateTaskOrders(boardData[destinationColumn]);
     } catch (error) {
       console.error("Failed to update task:", error);
-      // Revert on error
+      toast({
+        title: "Error updating task",
+        description: error instanceof Error ? error.message : "An error occurred",
+        status: "error",
+        duration: 5000,
+        isClosable: true,
+      });
       fetchTasks();
     }
   };
 
   const updateTaskOrders = async (tasks: TaskType[]) => {
-    const updatePromises = tasks.map((task, index) => 
+    const updatePromises = tasks.map((task, index) =>
       taskService.updateTaskOrder(task.id, index)
     );
     await Promise.all(updatePromises);
   };
 
   const handleAddTask = (status: TaskStatus) => {
-    setCurrentTask({ status });
+    setCurrentTask({
+      status,
+      priority: TaskPriority.MEDIUM,
+      assignedTo: '',
+      createdBy: '',
+    });
     onOpen();
   };
 
@@ -316,33 +221,80 @@ export const Board: React.FC = () => {
   const handleDeleteTask = async (id: string) => {
     try {
       await taskService.deleteTask(id);
+      toast({
+        title: "Task deleted",
+        status: "success",
+        duration: 3000,
+        isClosable: true,
+      });
       fetchTasks();
     } catch (error) {
       console.error("Failed to delete task:", error);
+      toast({
+        title: "Error deleting task",
+        description: error instanceof Error ? error.message : "An error occurred",
+        status: "error",
+        duration: 5000,
+        isClosable: true,
+      });
     }
   };
 
   const handleSaveTask = async () => {
-    if (!currentTask?.title) return;
+    if (!currentTask?.title) {
+      toast({
+        title: "Title is required",
+        status: "error",
+        duration: 3000,
+        isClosable: true,
+      });
+      return;
+    }
 
     try {
       if (currentTask.id) {
         await taskService.updateTask(currentTask.id, {
           title: currentTask.title,
           description: currentTask.description,
+          priority: currentTask.priority as TaskPriority,
+          assignedTo: currentTask.assignedTo,
+          dueDate: currentTask.dueDate ? new Date(currentTask.dueDate) : undefined,
+        });
+        toast({
+          title: "Task updated",
+          status: "success",
+          duration: 3000,
+          isClosable: true,
         });
       } else {
         await taskService.createTask({
           title: currentTask.title,
           description: currentTask.description,
           status: currentTask.status || TaskStatus.TODO,
-          order: boardData[currentTask.status || "TODO"].length,
+          priority: currentTask.priority as TaskPriority,
+          assignedTo: currentTask.assignedTo || '',
+          order: boardData[currentTask.status || TaskStatus.TODO].length,
+          dueDate: currentTask.dueDate ? new Date(currentTask.dueDate) : undefined,
+        });
+        toast({
+          title: "Task created",
+          status: "success",
+          duration: 3000,
+          isClosable: true,
         });
       }
       fetchTasks();
       onClose();
+      setCurrentTask(null);
     } catch (error) {
       console.error("Failed to save task:", error);
+      toast({
+        title: "Error saving task",
+        description: error instanceof Error ? error.message : "An error occurred",
+        status: "error",
+        duration: 5000,
+        isClosable: true,
+      });
     }
   };
 
@@ -352,7 +304,7 @@ export const Board: React.FC = () => {
 
   return (
     <Box p={4}>
-      <Heading size="lg" mb={6} textAlign="center">
+      <Heading color={fontColor} size="lg" mb={6} textAlign="center">
         Task Board
       </Heading>
       <DndContext
@@ -364,9 +316,15 @@ export const Board: React.FC = () => {
           align={{ base: "center", md: "flex-start" }}
           overflowX="auto"
           pb={4}
+         
         >
           {statusOrder.map((status) => (
             <Column
+              dark={dark}
+              light={light}
+              fontColor={fontColor}
+
+
               key={status}
               status={status}
               tasks={boardData[status]}
@@ -385,17 +343,47 @@ export const Board: React.FC = () => {
           <ModalHeader>{currentTask?.id ? "Edit Task" : "Create Task"}</ModalHeader>
           <ModalCloseButton />
           <ModalBody>
-            <Input
-              placeholder="Task title"
-              value={currentTask?.title || ""}
-              onChange={(e) => setCurrentTask(prev => ({ ...prev, title: e.target.value }))}
-              mb={4}
-            />
-            <Input
-              placeholder="Description (optional)"
-              value={currentTask?.description || ""}
-              onChange={(e) => setCurrentTask(prev => ({ ...prev, description: e.target.value }))}
-            />
+            <VStack spacing={4}>
+              <Input
+                placeholder="Task title"
+                value={currentTask?.title || ""}
+                onChange={(e) => setCurrentTask(prev => ({ ...prev, title: e.target.value }))}
+              />
+              <Textarea
+                placeholder="Description (optional)"
+                value={currentTask?.description || ""}
+                onChange={(e) => setCurrentTask(prev => ({ ...prev, description: e.target.value }))}
+              />
+              <Select
+                value={currentTask?.priority || TaskPriority.MEDIUM}
+                onChange={(e) => setCurrentTask(prev => ({ ...prev, priority: e.target.value as TaskPriority }))}
+              >
+                {Object.values(TaskPriority).map((priority) => (
+                  <option key={priority} value={priority}>
+                    {priority}
+                  </option>
+                ))}
+              </Select>
+              <Input
+                placeholder="Assigned to (email)"
+                value={currentTask?.assignedTo || ""}
+                onChange={(e) => setCurrentTask(prev => ({ ...prev, assignedTo: e.target.value }))}
+              />
+            
+                <Input
+                  type="date"
+                  value={currentTask?.dueDate ? new Date(currentTask.dueDate).toISOString().split("T")[0] : ""}
+                  onChange={(e) =>
+                  setCurrentTask((prev) => ({
+                    ...prev,
+                    dueDate: e.target.value ? new Date(e.target.value) : undefined,
+                  }))
+                  }
+                  placeholder="Due Date"
+                  width="100%"
+                />
+             
+            </VStack>
           </ModalBody>
           <ModalFooter>
             <Button variant="ghost" mr={3} onClick={onClose}>

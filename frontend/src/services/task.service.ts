@@ -1,28 +1,135 @@
 import api from './api.service';
+import { Task, TaskStatus, TaskPriority } from '../types/task';
+import axios from 'axios';
 import { API_ENDPOINTS } from '../config/api.config';
-import { Task, TaskStatus } from '../types/task';
 
-export const taskService = {
-  getAllTasks: () =>
-    api.get<Task[]>(API_ENDPOINTS.TASKS.BASE).then(res => res.data),
+interface CreateTaskDto {
+  title: string;
+  description?: string;
+  status: TaskStatus;
+  priority?: TaskPriority;
+  assignedTo?: string;
+  order: number;
+  dueDate?: Date;
+ 
+}
 
-  getTaskById: (id: string) =>
-    api.get<Task>(API_ENDPOINTS.TASKS.BY_ID(id)).then(res => res.data),
+interface UpdateTaskDto {
+  title?: string;
+  description?: string;
+  priority?: TaskPriority;
+  assignedTo?: string;
+  status?: TaskStatus;
+  order?: number;
+  dueDate?: Date;
+  active?: boolean;
+  createdAt?: Date;
+  updatedAt?: Date;
+}
 
-  createTask: (task: Partial<Task>) =>
-    api.post<Task>(API_ENDPOINTS.TASKS.BASE, task).then(res => res.data),
+class TaskService {
+  async getAllTasks(): Promise<Task[]> {
+    try {
+      const response = await api.get<Task[]>(API_ENDPOINTS.TASKS.BASE);
+      return response.data;
+    } catch (error) {
+      if (axios.isAxiosError(error)) {
+        throw new Error(`Failed to fetch tasks: ${error.message}`);
+      } else {
+        throw error;
+      }
+    }
+  }
 
-  updateTask: (id: string, task: Partial<Task>) =>
-    api.put<Task>(API_ENDPOINTS.TASKS.BY_ID(id), task).then(res => res.data),
+  async getTaskById(id: string): Promise<Task> {
+    try {
+      const response = await api.get<Task>(API_ENDPOINTS.TASKS.BY_ID(id));
+      return response.data;
+    } catch (error) {
+      if (axios.isAxiosError(error)) {
+        throw new Error(`Failed to fetch task with id ${id}: ${error.message}`);
+      } else {
+        throw error;
+      }
+    }
+  }
 
-  updateTaskStatus: (id: string, status: TaskStatus) =>
-    api.put<Task>(API_ENDPOINTS.TASKS.STATUS(id), { status: status }).then(res => res.data),
+  async createTask(taskData: CreateTaskDto): Promise<Task> {
+    try {
+      const response = await api.post<Task>(API_ENDPOINTS.TASKS.BASE, taskData);
+      return response.data;
+    } catch (error) {
+      if (axios.isAxiosError(error)) {
+        throw new Error(`Failed to create task: ${error.message}`);
+      } else {
+        throw error;
+      }
+    }
+  }
 
-  updateTaskOrder: (id: string, newOrder: number) =>
-    api.put<Task>(API_ENDPOINTS.TASKS.ORDER(id), { order: newOrder }).then(res => res.data),
+  async updateTask(id: string, taskData: UpdateTaskDto): Promise<Task> {
+    try {
+      const response = await api.patch<Task>(API_ENDPOINTS.TASKS.BY_ID(id), taskData);
+      return response.data;
+    } catch (error) {
+      if (axios.isAxiosError(error)) {
+        throw new Error(`Failed to update task: ${error.message}`);
+      } else {
+        throw error;
+      }
+    }
+  }
 
-  deleteTask: (id: string) =>
-    api.delete(API_ENDPOINTS.TASKS.BY_ID(id)).then(res => res.data),
+  async deleteTask(id: string): Promise<void> {
+    try {
+      await api.delete(API_ENDPOINTS.TASKS.BY_ID(id));
+    } catch (error) {
+      if (axios.isAxiosError(error)) {
+        throw new Error(`Failed to delete task: ${error.message}`);
+      } else {
+        throw error;
+      }
+    }
+  }
 
-  
-};
+  async updateTaskStatus(id: string, status: TaskStatus): Promise<Task> {
+    try {
+      const response = await api.put<Task>(API_ENDPOINTS.TASKS.STATUS(id), { status : status });
+      return response.data;
+    } catch (error) {
+      if (axios.isAxiosError(error)) {
+        throw new Error(`Failed to update task status: ${error.message}`);
+      } else {
+        throw error;
+      }
+    }
+  }
+
+  async updateTaskOrder(id: string, order: number): Promise<Task> {
+    try {
+      const response = await api.put<Task>(API_ENDPOINTS.TASKS.ORDER(id), { order : order });
+      return response.data;
+    } catch (error) {
+      if (axios.isAxiosError(error)) {
+        throw new Error(`Failed to update task order: ${error.message}`);
+      } else {
+        throw error;
+      }
+    }
+  }
+
+  async getTasksByAssignee(userId: string): Promise<Task[]> {
+    try {
+      const response = await api.get<Task[]>(`${API_ENDPOINTS.TASKS.BASE}?assignedTo=${userId}`);
+      return response.data;
+    } catch (error) {
+      if (axios.isAxiosError(error)) {
+        throw new Error(`Failed to fetch tasks for user ${userId}: ${error.message}`);
+      } else {
+        throw error;
+      }
+    }
+  }
+}
+
+export const taskService = new TaskService();
