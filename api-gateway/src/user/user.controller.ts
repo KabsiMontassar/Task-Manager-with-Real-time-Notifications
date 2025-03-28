@@ -9,10 +9,7 @@ import { Req, Body } from '@nestjs/common';
 export class UserController {
   constructor(private readonly userService: UserService) {}
 
-  @Get()
-  async findAll() {
-    return this.userService.findAll();
-  }
+ 
 
   @Get('me')
   async getProfile(@Req() req: Request) {
@@ -97,4 +94,6 @@ export class UserController {
       throw error;
     }
   }
+
+
 }

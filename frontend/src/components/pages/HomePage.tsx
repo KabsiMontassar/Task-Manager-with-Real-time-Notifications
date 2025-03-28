@@ -42,9 +42,8 @@ const HomePage = () => {
         const userData = await userService.getCurrentUser();
         setUser(userData);
 
-        // Load all users
-        const allUsers = await userService.getAllUsers();
-        setUsers(allUsers);
+        // const allUsers = await userService.getAllUsers();
+        // setUsers(allUsers);
       } catch (error) {
         console.error('Failed to fetch user data:', error);
         authService.logout();
@@ -122,25 +121,9 @@ const HomePage = () => {
                 {Banner === "Pattern" && <Pattern />}
                 {Banner === "Hexagon" && <Hexagon />}
                 
-                <Flex ml={5} position="absolute" top="22vh" gap={2} overflowX="auto" p={2}>
-                  {users.map(u => (
-                    <Box key={u.email} bg={light} p={2} borderRadius="full">
-                      <Avatar 
-                        size="2xl" 
-                        name={`${u.firstName} ${u.lastName}`}
-                        bg={u.email === user?.email ? 'green.500' : 'gray.500'}
-                      />
-                      <Text 
-                        color={fontColor} 
-                        fontSize="sm" 
-                        textAlign="center" 
-                        mt={2}
-                      >
-                        {u.firstName}
-                      </Text>
-                    </Box>
-                  ))}
-                </Flex>
+                <Box ml={5} bg={light} position="absolute" top="22vh" p={2} borderRadius="full">
+                  <Avatar size="2xl" name="Dan Abrahmov" src="https://bit.ly/dan-abramov" />
+                </Box>
               </Box>
               <Box>
                 {user && <Profile user={user} light={dark} dark={light} fontColor={fontColor} />}

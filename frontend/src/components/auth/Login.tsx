@@ -30,29 +30,25 @@ const Login = () => {
       ...prev,
       [name]: value,
     }));
+    setError(""); // Clear error when user types
   };
 
   const handleSubmit = async (e: React.FormEvent) => {
-    e.preventDefault(); // Prevent form submission
+    e.preventDefault();
+    if (!formData.email || !formData.password) {
+      setError("Please enter both email and password");
+      return;
+    }
+
     setError("");
     setLoading(true);
 
     try {
-      console.log('Attempting login with:', formData);
-      const response = await authService.login(formData);
-      console.log('Login response:', response);
+      await authService.login(formData);
 
-      // Verify we have both token and user
-      if (!response.access_token || !response.user) {
-        throw new Error("Invalid response from server");
-      }
-
-      // Verify token is stored and valid
-      const token = localStorage.getItem('token');
-      console.log('Stored token:', token);
-      
-      if (!token || !authService.isAuthenticated()) {
-        throw new Error("Authentication verification failed");
+      // Check if we're actually authenticated
+      if (!authService.isAuthenticated()) {
+        throw new Error("Login failed - please try again");
       }
 
       toast({
@@ -63,7 +59,6 @@ const Login = () => {
         isClosable: true,
       });
 
-      // Use replace to prevent going back to login page
       navigate("/", { replace: true });
     } catch (err: any) {
       console.error("Login error:", err);
@@ -72,10 +67,6 @@ const Login = () => {
           err.message ||
           "Failed to login. Please check your credentials."
       );
-      
-      // Clear any invalid tokens
-      localStorage.removeItem('token');
-      localStorage.removeItem('user');
     } finally {
       setLoading(false);
     }
@@ -101,7 +92,7 @@ const Login = () => {
         </Heading>
 
         {error && (
-          <Alert status="error" mb={4}>
+          <Alert status="error" mb={4} borderRadius="md">
             <AlertIcon />
             {error}
           </Alert>
@@ -117,6 +108,8 @@ const Login = () => {
                 value={formData.email}
                 onChange={handleChange}
                 isDisabled={loading}
+                autoComplete="email"
+                autoFocus
               />
             </FormControl>
 
@@ -128,6 +121,7 @@ const Login = () => {
                 value={formData.password}
                 onChange={handleChange}
                 isDisabled={loading}
+                autoComplete="current-password"
               />
             </FormControl>
 

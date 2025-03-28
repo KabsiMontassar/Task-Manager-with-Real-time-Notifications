@@ -21,20 +21,31 @@ import {
 import { CheckIcon, CloseIcon } from '@chakra-ui/icons';
 
 interface TaskFormProps {
-  task?: Task;
+  task: Task | null;
   onSubmit: () => void;
-  onCancel: () => void;
+  light: string;
+  fontColor: string;
 }
 
-export const TaskForm: React.FC<TaskFormProps> = ({ task, onSubmit, onCancel }) => {
-  const [formData, setFormData] = useState({
-    title: '',
-    description: '',
-    dueDate: '',
-    priority: TaskPriority.MEDIUM,
-    status: TaskStatus.TODO,
-    assignedTo: '',
-    createdBy: 'montassar@example.com',
+export const TaskForm: React.FC<TaskFormProps> = ({ 
+  task, 
+  onSubmit,
+  light,
+  fontColor
+}) => {
+  const [formData, setFormData] = useState<Partial<Task>>({
+    id: task?.id || '',
+    title: task?.title || '',
+    description: task?.description || '',
+    dueDate: task?.dueDate ? new Date(task.dueDate).toISOString().split('T')[0] : '',
+    priority: task?.priority || TaskPriority.MEDIUM,
+    status: task?.status || TaskStatus.TODO,
+    assignedTo: task?.assignedTo || '',
+    createdBy: task?.createdBy || userService.getCurrentUser()?.email || '',
+    attachments: task?.attachments || [],
+    comments: task?.comments || [],
+    createdAt: task?.createdAt || new Date().toISOString(),
+    updatedAt: task?.updatedAt || new Date().toISOString(),
   });
 
   const [error, setError] = useState<string>('');
@@ -43,33 +54,21 @@ export const TaskForm: React.FC<TaskFormProps> = ({ task, onSubmit, onCancel }) 
   const [userCheckTimeout, setUserCheckTimeout] = useState<NodeJS.Timeout | null>(null);
 
   useEffect(() => {
-    if (task) {
-      setFormData({
-        title: task.title,
-        description: task.description || '',
-        dueDate: task.dueDate?.split('T')[0] || '',
-        priority: task.priority,
-        status: task.status,
-        assignedTo: task.assignedTo || '',
-        createdBy: task.createdBy,
-      });
-      // Validate the assigned user when editing
-      if (task.assignedTo) {
-        checkUserExists(task.assignedTo);
-      }
+    if (formData.assignedTo) {
+      validateUser(formData.assignedTo);
     }
-  }, [task]);
+  }, []);
 
-  const checkUserExists = async (email: string) => {
+  const validateUser = async (email: string) => {
     if (!email) {
       setIsValidUser(false);
       return;
     }
 
+    setIsCheckingUser(true);
     try {
-      setIsCheckingUser(true);
-      await userService.getUserByEmail(email);
-      setIsValidUser(true);
+      const user = await userService.getUserByEmail(email);
+      setIsValidUser(user && user.email === email);
     } catch (error) {
       setIsValidUser(false);
     } finally {
@@ -77,108 +76,158 @@ export const TaskForm: React.FC<TaskFormProps> = ({ task, onSubmit, onCancel }) 
     }
   };
 
-  const handleAssignedToChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-    const email = e.target.value;
-    setFormData({ ...formData, assignedTo: email });
+  const handleInputChange = (
+    e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement | HTMLSelectElement>
+  ) => {
+    const { name, value } = e.target;
+    setFormData((prev) => ({ ...prev, [name]: value }));
 
-    // Clear any existing timeout
-    if (userCheckTimeout) {
-      clearTimeout(userCheckTimeout);
+    if (name === 'assignedTo') {
+      setIsValidUser(false);
+      if (userCheckTimeout) {
+        clearTimeout(userCheckTimeout);
+      }
+      const timeoutId = setTimeout(() => validateUser(value), 500);
+      setUserCheckTimeout(timeoutId);
     }
 
-    // Set a new timeout to check user after typing stops
-    const timeout = setTimeout(() => {
-      checkUserExists(email);
-    }, 500);
-
-    setUserCheckTimeout(timeout);
-  };
-
-  const validateForm = () => {
-    if (!formData.title.trim()) {
-      setError('Title is required');
-      return false;
-    }
-    if (!formData.assignedTo || !isValidUser) {
-      setError('Please enter a valid user email');
-      return false;
-    }
-    if (formData.dueDate && new Date(formData.dueDate) < new Date()) {
-      setError('Due date cannot be in the past');
-      return false;
-    }
     setError('');
-    return true;
   };
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    if (!validateForm()) return;
+    setError('');
+
+    if (!formData.title?.trim()) {
+      setError('Title is required');
+      return;
+    }
+
+    if (!formData.assignedTo?.trim()) {
+      setError('Assigned user is required');
+      return;
+    }
+
+    if (!isValidUser) {
+      setError('Please enter a valid user email');
+      return;
+    }
 
     try {
-      if (task) {
-        await taskService.updateTask(task.id, formData);
+      const taskData = {
+        ...formData,
+        updatedAt: new Date().toISOString(),
+      } as Task;
+
+      if (task?.id) {
+        await taskService.updateTask(task.id, taskData);
       } else {
-        await taskService.createTask(formData);
+        await taskService.createTask(taskData);
       }
       onSubmit();
-    } catch (error) {
-      console.error('Error saving task:', error);
-      setError('Failed to save task. Please try again.');
+    } catch (error: any) {
+      setError(error.response?.data?.message || 'Failed to save task');
     }
   };
 
   return (
-    <form onSubmit={handleSubmit}>
+    <Box as="form" onSubmit={handleSubmit}>
       <VStack spacing={4} align="stretch">
         {error && (
-          <Alert status="error">
+          <Alert status="error" borderRadius="md">
             <AlertIcon />
             {error}
           </Alert>
         )}
 
         <FormControl isRequired>
-          <FormLabel>Title</FormLabel>
+          <FormLabel color={fontColor}>Title</FormLabel>
           <Input
+            name="title"
             value={formData.title}
-            onChange={(e) => {
-              setFormData({ ...formData, title: e.target.value });
-              setError('');
-            }}
-            placeholder="Enter task title"
+            onChange={handleInputChange}
+            bg={light}
+            color={fontColor}
           />
         </FormControl>
 
         <FormControl>
-          <FormLabel>Description</FormLabel>
+          <FormLabel color={fontColor}>Description</FormLabel>
           <Textarea
+            name="description"
             value={formData.description}
-            onChange={(e) => setFormData({ ...formData, description: e.target.value })}
-            placeholder="Enter task description"
-            rows={3}
+            onChange={handleInputChange}
+            bg={light}
+            color={fontColor}
+          />
+        </FormControl>
+
+        <FormControl>
+          <FormLabel color={fontColor}>Due Date</FormLabel>
+          <Input
+            type="date"
+            name="dueDate"
+            value={formData.dueDate}
+            onChange={handleInputChange}
+            bg={light}
+            color={fontColor}
           />
         </FormControl>
 
         <FormControl isRequired>
-          <FormLabel>Assigned To</FormLabel>
+          <FormLabel color={fontColor}>Priority</FormLabel>
+          <Select
+            name="priority"
+            value={formData.priority}
+            onChange={handleInputChange}
+            bg={light}
+            color={fontColor}
+          >
+            {Object.values(TaskPriority).map((priority) => (
+              <option key={priority} value={priority}>
+                {priority}
+              </option>
+            ))}
+          </Select>
+        </FormControl>
+
+        <FormControl isRequired>
+          <FormLabel color={fontColor}>Status</FormLabel>
+          <Select
+            name="status"
+            value={formData.status}
+            onChange={handleInputChange}
+            bg={light}
+            color={fontColor}
+          >
+            {Object.values(TaskStatus).map((status) => (
+              <option key={status} value={status}>
+                {status.replace('_', ' ')}
+              </option>
+            ))}
+          </Select>
+        </FormControl>
+
+        <FormControl isRequired>
+          <FormLabel color={fontColor}>Assign To (Email)</FormLabel>
           <InputGroup>
             <Input
-              type="email"
+              name="assignedTo"
               value={formData.assignedTo}
-              onChange={handleAssignedToChange}
-              placeholder="Enter user email"
+              onChange={handleInputChange}
+              bg={light}
+              color={fontColor}
             />
             <InputRightElement>
               {isCheckingUser ? (
                 <Spinner size="sm" />
               ) : formData.assignedTo ? (
                 isValidUser ? (
-                  <Tooltip label="User found">
+                  <Tooltip label="Valid user">
                     <CheckIcon color="green.500" />
                   </Tooltip>
                 ) : (
-                  <Tooltip label="User not found">
+                  <Tooltip label="Invalid user">
                     <CloseIcon color="red.500" />
                   </Tooltip>
                 )
@@ -187,52 +236,10 @@ export const TaskForm: React.FC<TaskFormProps> = ({ task, onSubmit, onCancel }) 
           </InputGroup>
         </FormControl>
 
-        <FormControl>
-          <FormLabel>Due Date</FormLabel>
-          <Input
-            type="date"
-            value={formData.dueDate}
-            onChange={(e) => setFormData({ ...formData, dueDate: e.target.value })}
-          />
-        </FormControl>
-
-        <FormControl>
-          <FormLabel>Priority</FormLabel>
-          <Select
-            value={formData.priority}
-            onChange={(e) => setFormData({ ...formData, priority: e.target.value as TaskPriority })}
-          >
-            {Object.values(TaskPriority).map(priority => (
-              <option key={priority} value={priority}>
-                {priority}
-              </option>
-            ))}
-          </Select>
-        </FormControl>
-
-        <FormControl>
-          <FormLabel>Status</FormLabel>
-          <Select
-            value={formData.status}
-            onChange={(e) => setFormData({ ...formData, status: e.target.value as TaskStatus })}
-          >
-            {Object.values(TaskStatus).map(status => (
-              <option key={status} value={status}>
-                {status}
-              </option>
-            ))}
-          </Select>
-        </FormControl>
-
-        <Box display="flex" justifyContent="flex-end" gap={4}>
-          <Button onClick={onCancel} variant="outline">
-            Cancel
-          </Button>
-          <Button type="submit" colorScheme="blue">
-            {task ? 'Update' : 'Create'} Task
-          </Button>
-        </Box>
+        <Button type="submit" colorScheme="teal" isLoading={isCheckingUser}>
+          {task?.id ? 'Update Task' : 'Create Task'}
+        </Button>
       </VStack>
-    </form>
+    </Box>
   );
 };
