@@ -1,69 +1,48 @@
-import { useState, useEffect } from "react";
-import { Box, Circle, Tooltip, Icon } from "@chakra-ui/react";
-import { CheckIcon } from "@chakra-ui/icons";
-import { themes } from "../design/Themes";
+import { Box, Circle, Tooltip, Icon } from '@chakra-ui/react';
+import { CheckIcon } from '@chakra-ui/icons';
+import { themes } from '../design/Themes';
+import { useTheme } from '../../context/ThemeContext';
 
-type ThemeType = "Light" | "Ash" | "Dark" | "Oxyn";
+const ThemeSelector = () => {
+  const { theme, setTheme } = useTheme();
+  type ThemeType = 'Light' | 'Ash' | 'Dark' | 'Oxyn';
+  const themesMain: ThemeType[] = ['Light', 'Ash', 'Dark', 'Oxyn'];
 
-const ThemeSelector = ({
-  setTheme,
-}: {
-  setTheme: React.Dispatch<React.SetStateAction<ThemeType>>;
-}) => {
-  const themesMain: ThemeType[] = ["Light", "Ash", "Dark", "Oxyn"];
-  const [selectedTheme, setSelectedTheme] = useState<ThemeType>("Light");
 
-  useEffect(() => {
-    const storedTheme = localStorage.getItem("theme") as ThemeType;
-    if (storedTheme) {
-      setSelectedTheme(storedTheme);
-      setTheme(storedTheme);
-    } else {
-      setSelectedTheme("Light");
-      setTheme("Light");
-    }
-  }, [setTheme]);
 
-  const handleThemeChange = (theme: ThemeType) => {
-    localStorage.setItem("theme", theme);
-    setSelectedTheme(theme);
-    setTheme(theme);
-  };
+ 
 
   return (
     <Box p={3} position="absolute" top={5} right={0} display="flex" gap={3}>
-      {themesMain.map((theme) => (
-        <Tooltip key={theme} label={theme}>
+      {themesMain.map((themeOption) => (
+        <Tooltip key={themeOption} label={themeOption}>
           <Box position="relative">
-            {/* Theme Circle */}
             <Circle
               size="60px"
               bg={`conic-gradient(from 45deg, ${
-                theme === "Light"
-                  ? themes["Light"].dark
-                  : theme === "Ash"
-                  ? themes["Ash"].light
-                  : theme === "Dark"
-                  ? themes["Dark"].light
-                  : themes["Oxyn"].light
+                themeOption === 'Light'
+                  ? themes['Light'].dark
+                  : themeOption === 'Ash'
+                  ? themes['Ash'].light
+                  : themeOption === 'Dark'
+                  ? themes['Dark'].light
+                  : themes['Oxyn'].light
               } 0deg 180deg, ${
-                theme === "Light"
-                  ? themes["Light"].light
-                  : theme === "Ash"
-                  ? themes["Ash"].dark
-                  : theme === "Dark"
-                  ? themes["Dark"].dark
-                  : themes["Oxyn"].dark
+                themeOption === 'Light'
+                  ? themes['Light'].light
+                  : themeOption === 'Ash'
+                  ? themes['Ash'].dark
+                  : themeOption === 'Dark'
+                  ? themes['Dark'].dark
+                  : themes['Oxyn'].dark
               } 180deg)`}
-              border={selectedTheme === theme ? "3px solid teal" : "2px solid gray"}
-              onClick={() => handleThemeChange(theme)}
+              border={theme === themeOption ? '3px solid teal' : '2px solid gray'}
+              onClick={() => setTheme(themeOption)}
               cursor="pointer"
               transition="0.2s ease-in-out"
-              _hover={{ transform: "scale(1.1)" }}
+              _hover={{ transform: 'scale(1.1)' }}
             />
-
-            {/* Checkmark Icon (Visible only when selected) */}
-            {selectedTheme === theme && (
+            {theme === themeOption && (
               <Icon
                 as={CheckIcon}
                 color="white"

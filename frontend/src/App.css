@@ -8,6 +8,11 @@
   scrollbar-width: none; 
 }
 
+:root {
+  --dark-color: #28282D; /* Default Ash theme */
+  --light-color: #333339;
+  --font-color: #D8D8DB;
+}
 
 .loading {
   display: flex;

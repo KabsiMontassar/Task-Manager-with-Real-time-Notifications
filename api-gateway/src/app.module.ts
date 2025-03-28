@@ -4,7 +4,6 @@ import { ClientsModule, Transport } from '@nestjs/microservices';
 import { AuthModule } from './auth/auth.module';
 import { TaskModule } from './task/task.module';
 import { UserModule } from './user/user.module';
-import { NotificationModule } from './notification/notification.module';
 
 @Module({
   imports: [
@@ -19,17 +18,11 @@ import { NotificationModule } from './notification/notification.module';
         name: 'TASK_SERVICE',
         transport: Transport.TCP,
         options: { port: 3002 }, 
-      },
-      {
-        name: 'NOTIFICATION_SERVICE',
-        transport: Transport.TCP,
-        options: { port: 3003 }, 
-      },
+      }
     ]),
     AuthModule,
     TaskModule,
     UserModule,
-    NotificationModule,
   ],
 })
 export class AppModule {}

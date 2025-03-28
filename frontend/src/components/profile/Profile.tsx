@@ -23,9 +23,10 @@ interface ProfileProps {
   dark: string;
   light: string;
   fontColor: string;
+  onSave: (updatedUser: User) => void;
 }
 
-export const Profile: React.FC<ProfileProps> = ({ user,fontColor }) => {
+export const Profile: React.FC<ProfileProps> = ({ user, light, dark, fontColor, onSave }) => {
   const [isEditing, setIsEditing] = useState(false);
   const [formData, setFormData] = useState({
     firstName: user.firstName || '',
@@ -57,6 +58,8 @@ export const Profile: React.FC<ProfileProps> = ({ user,fontColor }) => {
 
       setIsEditing(false);
       toast({ title: 'Profile updated successfully!', status: 'success', duration: 3000, isClosable: true });
+      const updatedUser = await userService.updateUser(user);
+      onSave(updatedUser);
     } catch (error) {
       console.error('Error updating profile:', error);
       toast({ title: 'Failed to update profile', status: 'error', duration: 3000, isClosable: true });

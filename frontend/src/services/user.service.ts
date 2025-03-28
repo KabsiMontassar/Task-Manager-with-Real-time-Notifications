@@ -80,4 +80,14 @@ export const userService = {
       throw error;
     }
   },
+
+  updateUser: async (user: User): Promise<User> => {
+    try {
+      const response = await api.put(API_ENDPOINTS.USERS.BY_ID(user.id), user);
+      return response.data;
+    } catch (error: any) {
+      console.error('Error updating user:', error.response?.data || error.message);
+      throw error;
+    }
+  },
 };
