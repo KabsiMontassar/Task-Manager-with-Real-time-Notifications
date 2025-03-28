@@ -10,6 +10,8 @@ interface CreateTaskDto {
   priority?: TaskPriority;
   assignedTo?: string;
   order: number;
+  dueDate?: Date;
+ 
 }
 
 interface UpdateTaskDto {
@@ -17,6 +19,12 @@ interface UpdateTaskDto {
   description?: string;
   priority?: TaskPriority;
   assignedTo?: string;
+  status?: TaskStatus;
+  order?: number;
+  dueDate?: Date;
+  active?: boolean;
+  createdAt?: Date;
+  updatedAt?: Date;
 }
 
 class TaskService {

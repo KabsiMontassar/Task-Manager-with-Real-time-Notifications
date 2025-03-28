@@ -29,6 +29,8 @@ import {
 import { taskService } from "../../services/task.service";
 import { Task as TaskType, TaskStatus, TaskPriority } from "../../types/task";
 import Column from "./Column";
+import DatePicker from "react-datepicker";
+import "react-datepicker/dist/react-datepicker.css";
 
 interface BoardData {
   [status: string]: TaskType[];
@@ -256,6 +258,7 @@ export const Board: React.FC<BoardProps> = ({ light, dark, fontColor }) => {
           description: currentTask.description,
           priority: currentTask.priority as TaskPriority,
           assignedTo: currentTask.assignedTo,
+          dueDate: currentTask.dueDate ? new Date(currentTask.dueDate) : undefined,
         });
         toast({
           title: "Task updated",
@@ -271,6 +274,7 @@ export const Board: React.FC<BoardProps> = ({ light, dark, fontColor }) => {
           priority: currentTask.priority as TaskPriority,
           assignedTo: currentTask.assignedTo || '',
           order: boardData[currentTask.status || TaskStatus.TODO].length,
+          dueDate: currentTask.dueDate ? new Date(currentTask.dueDate) : undefined,
         });
         toast({
           title: "Task created",
@@ -365,6 +369,20 @@ export const Board: React.FC<BoardProps> = ({ light, dark, fontColor }) => {
                 value={currentTask?.assignedTo || ""}
                 onChange={(e) => setCurrentTask(prev => ({ ...prev, assignedTo: e.target.value }))}
               />
+            
+                <Input
+                  type="date"
+                  value={currentTask?.dueDate ? new Date(currentTask.dueDate).toISOString().split("T")[0] : ""}
+                  onChange={(e) =>
+                  setCurrentTask((prev) => ({
+                    ...prev,
+                    dueDate: e.target.value ? new Date(e.target.value) : undefined,
+                  }))
+                  }
+                  placeholder="Due Date"
+                  width="100%"
+                />
+             
             </VStack>
           </ModalBody>
           <ModalFooter>
