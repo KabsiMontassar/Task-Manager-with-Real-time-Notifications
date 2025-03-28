@@ -3,18 +3,18 @@ name: Combined CI/CD Pipeline
 on:
   push:
     branches:
-      - montassar
+      - montassar # push to this branch will trigger the pipeline
   pull_request:
     branches:
-      - main
+      - main  # pull request to this branch will trigger the pipeline
 
 env:
-  REGISTRY: ghcr.io/<your-github-username>
-  CREDENTIALS_ID: ${{ secrets.GITHUB_TOKEN }}
+  REGISTRY: ghcr.io/KabsiMontassar   
+  CREDENTIALS_ID: ${{ secrets.GITHUBTOKEN }}  
 
 jobs:
   install-dependencies:
-    runs-on: ubuntu-latest
+    runs-on: windows-latest
     steps:
       - name: Checkout code
         uses: actions/checkout@v3
@@ -40,7 +40,7 @@ jobs:
           npm install
 
   unit-test:
-    runs-on: ubuntu-latest
+    runs-on: windows-latest
     needs: install-dependencies
     steps:
       - name: Checkout code
@@ -67,14 +67,14 @@ jobs:
           npm test
 
   build-and-push-docker-images:
-    runs-on: ubuntu-latest
+    runs-on: windows-latest
     needs: unit-test
     steps:
       - name: Checkout code
         uses: actions/checkout@v3
 
       - name: Log in to GitHub Container Registry
-        run: echo "${{ secrets.GITHUB_TOKEN }}" | docker login ghcr.io -u <your-github-username> --password-stdin
+        run: echo "${{ secrets.GITHUBTOKEN }}" | docker login ghcr.io -u <your-github-username> --password-stdin
 
       - name: Build and push Gateway image
         run: |
