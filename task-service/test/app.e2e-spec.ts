@@ -1,14 +1,16 @@
-import { Test, TestingModule } from '@nestjs/testing';
+import chai, { expect } from 'chai';
+import chaiHttp from 'chai-http';
 import { INestApplication } from '@nestjs/common';
-import * as request from 'supertest';
-import { App } from 'supertest/types';
+import { Test } from '@nestjs/testing';
 import { AppModule } from './../src/app.module';
 
-describe('AppController (e2e)', () => {
-  let app: INestApplication<App>;
+chai.use(chaiHttp);
 
-  beforeEach(async () => {
-    const moduleFixture: TestingModule = await Test.createTestingModule({
+describe('AppController (e2e)', () => {
+  let app: INestApplication;
+
+  before(async function () {
+    const moduleFixture = await Test.createTestingModule({
       imports: [AppModule],
     }).compile();
 
@@ -16,10 +18,21 @@ describe('AppController (e2e)', () => {
     await app.init();
   });
 
-  it('/ (GET)', () => {
-    return request(app.getHttpServer())
-      .get('/')
-      .expect(200)
-      .expect('Hello World!');
+  after(async () => {
+    await app.close();
+  });
+
+  it('should return "Hello World!"', async () => {
+    const res = await chai.request(app.getHttpServer()).get('/');
+    expect(res).to.have.status(200);
+    expect(res.text).to.equal('Hello World!');
   });
 });
+function before(arg0: () => Promise<void>) {
+  throw new Error('Function not implemented.');
+}
+// Removed duplicate implementation of the 'after' function
+function after(arg0: () => Promise<void>) {
+  throw new Error('Function not implemented.');
+}
+

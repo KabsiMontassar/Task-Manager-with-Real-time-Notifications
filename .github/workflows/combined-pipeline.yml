@@ -89,7 +89,7 @@ jobs:
           if [ "${{ matrix.service }}" == "frontend" ]; then
             npx playwright test
           else
-            npx mocha --require ts-node/register 'test/**/*.spec.ts'
+            npx mocha --require ts-node/register 'test/**/*.spec.ts' --recursive
           fi
 
   security-analysis:
