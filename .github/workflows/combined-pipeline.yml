@@ -100,7 +100,7 @@ jobs:
 
   build-and-push-docker-images:
     runs-on: windows-latest
-    # needs: unit-test
+    needs: install-dependencies
     steps:
       - name: Checkout code
         uses: actions/checkout@v3
@@ -110,6 +110,7 @@ jobs:
 
       - name: Build and push Gateway image
         run: |
+        
           cd api-gateway
           docker build -t $REGISTRY/api-gateway:latest .
           docker push $REGISTRY/api-gateway:latest
@@ -123,11 +124,19 @@ jobs:
       - name: Build and push Task Service image
         run: |
           cd task-service
+          if [ -z "$REGISTRY" ]; then
+            echo "REGISTRY is not set. Using default value 'myregistry'."
+            REGISTRY="myregistry"
+          fi
           docker build -t $REGISTRY/task-service:latest .
           docker push $REGISTRY/task-service:latest
 
       - name: Build and push User Service image
         run: |
           cd user-service
+          if [ -z "$REGISTRY" ]; then
+            echo "REGISTRY is not set. Using default value 'myregistry'."
+            REGISTRY="myregistry"
+          fi
           docker build -t $REGISTRY/user-service:latest .
           docker push $REGISTRY/user-service:latest
