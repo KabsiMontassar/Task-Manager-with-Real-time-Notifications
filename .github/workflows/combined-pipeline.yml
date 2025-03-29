@@ -64,17 +64,17 @@ jobs:
 
       - name: Run ESLint
         run: |
-          cd frontend && npm install @eslint/js --save-dev && npx eslint . --ext .ts,.tsx
-          cd ../api-gateway && npx eslint . --ext .ts
-          cd ../task-service && npx eslint . --ext .ts
-          cd ../user-service && npx eslint . --ext .ts
+          cd frontend && npm install @eslint/js --save-dev && npx eslint . --ext .ts,.tsx --fix
+          cd ../api-gateway && npx eslint . --ext .ts --fix
+          cd ../task-service && npx eslint . --ext .ts --fix
+          cd ../user-service && npx eslint . --ext .ts --fix
 
       - name: Run Prettier
         run: |
-          cd frontend && npx prettier --check .
-          cd ../api-gateway && npx prettier --check .
-          cd ../task-service && npx prettier --check .
-          cd ../user-service && npx prettier --check .
+          cd frontend && npx prettier --check . 
+          cd ../api-gateway && npx prettier --check . 
+          cd ../task-service && npx prettier --check . 
+          cd ../user-service && npx prettier --check . 
 
   run-tests:
     runs-on: ubuntu-latest
