@@ -1,7 +1,6 @@
 import api from './api.service';
 import { API_ENDPOINTS } from '../config/api.config';
 import { User } from '../types/user';
-import { AxiosError } from 'axios';
 
 interface ApiError {
   response?: {
