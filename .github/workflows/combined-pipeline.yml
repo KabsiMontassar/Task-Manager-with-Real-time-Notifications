@@ -76,7 +76,7 @@ jobs:
 
       - name: Run unit tests for Gateway
         run: |
-          cd gateway
+          cd api-gateway
           npm test
 
       - name: Run unit tests for Frontend
@@ -106,9 +106,9 @@ jobs:
 
       - name: Build and push Gateway image
         run: |
-          cd gateway
-          docker build -t $REGISTRY/gateway:latest .
-          docker push $REGISTRY/gateway:latest
+          cd api-gateway
+          docker build -t $REGISTRY/api-gateway:latest .
+          docker push $REGISTRY/api-gateway:latest
 
       - name: Build and push Frontend image
         run: |
