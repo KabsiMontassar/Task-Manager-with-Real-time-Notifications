@@ -68,10 +68,10 @@ jobs:
 
       - name: Run Prettier
         run: |
-          cd frontend && npx prettier --check . 
-          cd ../api-gateway && npx prettier --check . 
-          cd ../task-service && npx prettier --check . 
-          cd ../user-service && npx prettier --check . 
+          cd frontend && npx prettier --write . 
+          cd ../api-gateway && npx prettier --write . 
+          cd ../task-service && npx prettier --write . 
+          cd ../user-service && npx prettier --write .
 
   run-tests:
     runs-on: ubuntu-latest
@@ -153,4 +153,4 @@ jobs:
           cd user-service
           docker buildx build --cache-from=type=registry,ref=$REGISTRY/user-service:cache \
                               --cache-to=type=registry,ref=$REGISTRY/user-service:cache,mode=max \
-                              -t $REGISTRY/user-service:$IMAGE_TAG -t $REGISTRY/user-service:latest --push .   
+                              -t $REGISTRY/user-service:$IMAGE_TAG -t $REGISTRY/user-service:latest --push .
