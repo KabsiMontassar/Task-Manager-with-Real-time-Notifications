@@ -30,7 +30,7 @@ jobs:
         run: |
           cd api-gateway
           npm install
-          npm install --save-dev jest # Ensure Jest is installed
+          npm install --save-dev jest ts-jest # Ensure Jest and ts-jest are installed
 
       - name: Cache Frontend Dependencies
         uses: actions/cache@v4
@@ -43,7 +43,7 @@ jobs:
         run: |
           cd frontend
           npm install
-          npm install --save-dev jest # Ensure Jest is installed
+          npm install --save-dev jest ts-jest # Ensure Jest and ts-jest are installed
 
       - name: Cache Task Service Dependencies
         uses: actions/cache@v4
@@ -56,7 +56,7 @@ jobs:
         run: |
           cd task-service
           npm install
-          npm install --save-dev jest # Ensure Jest is installed
+          npm install --save-dev jest ts-jest # Ensure Jest and ts-jest are installed
 
       - name: Cache User Service Dependencies
         uses: actions/cache@v4
@@ -69,7 +69,7 @@ jobs:
         run: |
           cd user-service
           npm install
-          npm install --save-dev jest # Ensure Jest is installed
+          npm install --save-dev jest ts-jest # Ensure Jest and ts-jest are installed
 
   unit-test:
     runs-on: windows-latest

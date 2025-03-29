@@ -4,5 +4,5 @@ module.exports = {
   transform: {
     '^.+\\.tsx?$': 'ts-jest', // Use ts-jest for TypeScript files
   },
-  testMatch: ['**/*.spec.ts']
+  // ...existing configuration...
 };
