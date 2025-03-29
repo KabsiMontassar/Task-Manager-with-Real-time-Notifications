@@ -3,10 +3,10 @@ name: Combined CI/CD Pipeline
 on:
   push:
     branches:
-      - montassar
+      - main  
   pull_request:
     branches:
-      - main
+      - main  
 
 env:
   REGISTRY: ghcr.io/kabsimontassar  
