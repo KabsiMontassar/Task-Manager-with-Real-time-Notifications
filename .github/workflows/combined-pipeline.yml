@@ -9,7 +9,7 @@ on:
       - main
 
 env:
-  REGISTRY: ghcr.io/KabsiMontassar
+  REGISTRY: ghcr.io/kabsimontassar  
   IMAGE_TAG: ${{ github.sha }}
 
 jobs:
