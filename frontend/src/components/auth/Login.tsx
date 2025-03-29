@@ -1,6 +1,7 @@
 import { useState } from "react";
 import { useNavigate, Link } from "react-router-dom";
 import { authService } from "../../services/auth.service";
+import axios from "axios";
 import {
   Box,
   Button,
@@ -30,7 +31,7 @@ const Login = () => {
       ...prev,
       [name]: value,
     }));
-    setError(""); // Clear error when user types
+    setError(""); 
   };
 
   const handleSubmit = async (e: React.FormEvent) => {
@@ -39,18 +40,17 @@ const Login = () => {
       setError("Please enter both email and password");
       return;
     }
-
+  
     setError("");
     setLoading(true);
-
+  
     try {
       await authService.login(formData);
-
-      // Check if we're actually authenticated
+  
       if (!authService.isAuthenticated()) {
         throw new Error("Login failed - please try again");
       }
-
+  
       toast({
         title: "Login successful!",
         description: "Welcome back!",
@@ -58,15 +58,19 @@ const Login = () => {
         duration: 3000,
         isClosable: true,
       });
-
+  
       navigate("/", { replace: true });
-    } catch (err: any) {
+    } catch (err) {
       console.error("Login error:", err);
-      setError(
-        err.response?.data?.message ||
-          err.message ||
-          "Failed to login. Please check your credentials."
-      );
+      
+      // Type-safe error handling
+      if (axios.isAxiosError(err)) {
+        setError(err.response?.data?.message || "Login failed");
+      } else if (err instanceof Error) {
+        setError(err.message);
+      } else {
+        setError("Failed to login. Please check your credentials.");
+      }
     } finally {
       setLoading(false);
     }

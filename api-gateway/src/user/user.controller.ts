@@ -1,4 +1,11 @@
-import { Controller, Get, Put, Param, UseGuards, NotFoundException } from '@nestjs/common';
+import {
+  Controller,
+  Get,
+  Put,
+  Param,
+  UseGuards,
+  NotFoundException,
+} from '@nestjs/common';
 import { UserService } from './user.service';
 import { JwtAuthGuard } from '../auth/jwt-auth.guard';
 import { Request } from 'express';
@@ -20,8 +27,9 @@ export class UserController {
       throw new Error('User not found in request');
     }
     console.log('Getting profile for user:', req.user);
-    
-    const result = await this.userService.findById(req.user.userId);
+
+    const userId = (req.user as any).userId; // Cast to 'any' or the correct type
+    const result = await this.userService.findById(userId);
     console.log('Profile result:', result);
     return result;
   }
@@ -30,7 +38,9 @@ export class UserController {
   async getAllUsers() {
     try {
       console.log('Fetching all users');
-      const result = await this.userClient.send({ cmd: 'findAllUsers' }, {}).toPromise();
+      const result = await this.userClient
+        .send({ cmd: 'findAllUsers' }, {})
+        .toPromise();
       console.log('All users result:', result);
       return result;
     } catch (error) {
@@ -97,13 +107,19 @@ export class UserController {
 
   @Put(':id/password')
   @UseGuards(JwtAuthGuard)
-  async updatePassword(@Param('id') id: string, @Body() updatePasswordDto: any) {
+  async updatePassword(
+    @Param('id') id: string,
+    @Body() updatePasswordDto: any,
+  ) {
     try {
       const user = await this.userService.findById(id);
       if (!user) {
         throw new NotFoundException(`User with id ${id} not found`);
       }
-      const result = await this.userService.updatePassword(id, updatePasswordDto);
+      const result = await this.userService.updatePassword(
+        id,
+        updatePasswordDto,
+      );
       return result;
     } catch (error) {
       console.error('Error updating password:', error);

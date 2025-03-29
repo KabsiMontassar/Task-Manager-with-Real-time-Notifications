@@ -1,15 +1,21 @@
-import { IsString, IsNotEmpty, IsOptional, IsNumber, IsEnum } from 'class-validator';
+import {
+  IsString,
+  IsNotEmpty,
+  IsOptional,
+  IsNumber,
+  IsEnum,
+} from 'class-validator';
 
 export enum TaskStatus {
   TODO = 'TODO',
   IN_PROGRESS = 'IN_PROGRESS',
-  DONE = 'DONE'
+  DONE = 'DONE',
 }
 
 export enum TaskPriority {
   LOW = 'LOW',
   MEDIUM = 'MEDIUM',
-  HIGH = 'HIGH'
+  HIGH = 'HIGH',
 }
 
 export class CreateTaskDto {
@@ -70,13 +76,11 @@ export class UpdateStatusDto {
   status: TaskStatus;
 }
 
-
 export class UpdateActiveDto {
   @IsEnum(TaskStatus)
   @IsNotEmpty()
   active: boolean;
 }
-
 
 export class UpdateTaskOrderDto {
   @IsNumber()

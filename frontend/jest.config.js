@@ -1,8 +1,11 @@
+// Replace Jest configuration with Playwright setup
 module.exports = {
-  preset: 'ts-jest', // Use ts-jest preset
-  testEnvironment: 'jsdom', // Set the test environment for frontend
-  transform: {
-    '^.+\\.tsx?$': 'ts-jest', // Use ts-jest for TypeScript files
+  testDir: './tests',
+  timeout: 30000,
+  retries: 2,
+  use: {
+    headless: true,
+    viewport: { width: 1280, height: 720 },
+    ignoreHTTPSErrors: true,
   },
-  testMatch: ['**/*.spec.ts']
 };

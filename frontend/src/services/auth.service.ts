@@ -55,7 +55,7 @@ export const authService = {
       localStorage.setItem('user', JSON.stringify(user));
 
       return response.data;
-    } catch (error: any) {
+    } catch (error: unknown) {
       console.error('Login error:', error);
       // Clean up any partial data
       localStorage.removeItem('token');
@@ -84,7 +84,7 @@ export const authService = {
       localStorage.setItem('user', JSON.stringify(user));
 
       return response.data;
-    } catch (error: any) {
+    } catch (error: unknown) {
       console.error('Register error:', error);
       // Clean up any partial data
       localStorage.removeItem('token');

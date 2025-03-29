@@ -1,6 +1,7 @@
 import { useState } from 'react';
 import { useNavigate, Link as RouterLink } from 'react-router-dom';
 import { authService } from '../../services/auth.service';
+import axios from 'axios';
 import {
   Box,
   Button,
@@ -38,13 +39,21 @@ const Register = () => {
     e.preventDefault();
     setError('');
     setLoading(true);
-
+  
     try {
       await authService.register(formData);
-      
       navigate('/');
-    } catch (err: any) {
-      setError(err.response?.data?.message || 'Failed to register');
+    } catch (err) {
+      console.error('Registration error:', err);
+      
+      // Type-safe error handling
+      if (axios.isAxiosError(err)) {
+        setError(err.response?.data?.message || 'Failed to register');
+      } else if (err instanceof Error) {
+        setError(err.message);
+      } else {
+        setError('Failed to register. Please try again.');
+      }
     } finally {
       setLoading(false);
     }

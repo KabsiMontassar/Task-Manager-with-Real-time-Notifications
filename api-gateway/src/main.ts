@@ -12,6 +12,11 @@ async function bootstrap() {
   });
 
   // Ensure the API Gateway listens on its designated port
-  await app.listen(process.env.PORT ?? 3000);
+  await app.listen(process.env.PORT ?? 3000).catch((err) => {
+    console.error('Error starting the server:', err);
+  });
 }
-bootstrap();
+bootstrap().catch((error) => {
+  console.error('Error during app bootstrap:', error);
+  process.exit(1); // Exit process on failure
+});

@@ -6,7 +6,7 @@ import { AppModule } from './../src/app.module';
 
 chai.use(chaiHttp);
 
-describe('AppController (e2e)', () => {
+describe('AppController (e2e)', function () {
   let app: INestApplication;
 
   before(async function () {
@@ -18,21 +18,19 @@ describe('AppController (e2e)', () => {
     await app.init();
   });
 
-  after(async () => {
+  after(async function () {
     await app.close();
   });
 
-  it('should return "Hello World!"', async () => {
+  it('should return "Hello World!"', async function () {
     const res = await chai.request(app.getHttpServer()).get('/');
     expect(res).to.have.status(200);
     expect(res.text).to.equal('Hello World!');
   });
 });
-function before(arg0: () => Promise<void>) {
-  throw new Error('Function not implemented.');
+function before(callback: () => Promise<void>) {
+  return global.before(callback);
 }
-// Removed duplicate implementation of the 'after' function.
-function after(arg0: () => Promise<void>) {
-  throw new Error('Function not implemented.');
+function after(callback: () => Promise<void>) {
+  return global.after(callback);
 }
-
