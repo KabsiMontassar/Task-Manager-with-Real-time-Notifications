@@ -1,20 +1,13 @@
-import React, { createContext, useState, useContext, useEffect } from 'react';
-import { themes } from './ThemeContextUtils'; // Import your theme colors
-type ThemeType = 'Light' | 'Ash' | 'Dark' | 'Oxyn';
-
-interface ThemeContextProps {
-  theme: ThemeType;
-  setTheme: (theme: ThemeType) => void;
-}
-
-const ThemeContext = createContext<ThemeContextProps | undefined>(undefined);
+import React, { useState, useEffect } from 'react';
+import { ThemeContext, ThemeType } from './theme.types';
+import { themes } from './ThemeContextUtils';
 
 export const ThemeProvider: React.FC<{ children: React.ReactNode }> = ({ children }) => {
   const [theme, setTheme] = useState<ThemeType>('Light');
 
   useEffect(() => {
     const storedTheme = localStorage.getItem('theme') as ThemeType;
-    if (storedTheme) {
+    if (storedTheme && themes[storedTheme]) {
       setTheme(storedTheme);
     }
   }, []);
@@ -22,16 +15,17 @@ export const ThemeProvider: React.FC<{ children: React.ReactNode }> = ({ childre
   useEffect(() => {
     const root = document.documentElement;
     const themeColors = themes[theme];
-    if (themeColors) {
-      root.style.setProperty('--dark-color', themeColors.dark);
-      root.style.setProperty('--light-color', themeColors.light);
-      root.style.setProperty('--font-color', themeColors.fontColor);
-    }
+    
+    Object.entries(themeColors).forEach(([key, value]) => {
+      root.style.setProperty(`--${key.toLowerCase()}-color`, value);
+    });
   }, [theme]);
 
   const updateTheme = (newTheme: ThemeType) => {
-    localStorage.setItem('theme', newTheme);
-    setTheme(newTheme);
+    if (themes[newTheme]) {
+      localStorage.setItem('theme', newTheme);
+      setTheme(newTheme);
+    }
   };
 
   return (
@@ -39,12 +33,4 @@ export const ThemeProvider: React.FC<{ children: React.ReactNode }> = ({ childre
       {children}
     </ThemeContext.Provider>
   );
-};
-
-export const useTheme = (): ThemeContextProps => {
-  const context = useContext(ThemeContext);
-  if (!context) {
-    throw new Error('useTheme must be used within a ThemeProvider');
-  }
-  return context;
 };

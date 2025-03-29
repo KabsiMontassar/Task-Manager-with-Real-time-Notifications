@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from "react";
+import React, { useState, useEffect, useCallback } from "react";
 import {
   Box,
   Flex,
@@ -32,24 +32,12 @@ import { Task as TaskType, TaskStatus, TaskPriority } from "../../types/task";
 import Column from "./Column";
 import { ArchiveZone } from "./ArchiveZone";
 import { DeleteZone } from "./DeleteZone";
-
+import { statusOrder } from "./Task.constants";
 interface BoardData {
   [status: string]: TaskType[];
 }
 
-const statusOrder: TaskStatus[] = [TaskStatus.TODO, TaskStatus.IN_PROGRESS, TaskStatus.DONE];
 
-export const statusColors: Record<TaskStatus, string> = {
-  TODO: "yellow",
-  IN_PROGRESS: "blue",
-  DONE: "green",
-};
-
-export const statusLabels: Record<TaskStatus, string> = {
-  TODO: "To Do",
-  IN_PROGRESS: "In Progress",
-  DONE: "Done",
-};
 
 
 export const Board: React.FC = () => {
@@ -62,12 +50,7 @@ export const Board: React.FC = () => {
   const { isOpen, onOpen, onClose } = useDisclosure();
   const [currentTask, setCurrentTask] = useState<Partial<TaskType> | null>(null);
   const toast = useToast();
-
-  useEffect(() => {
-    fetchTasks();
-  }, []);
-
-  const fetchTasks = async () => {
+  const fetchTasks = useCallback(async () => {
     try {
       const tasks = await taskService.getAllTasks();
       const activeonly = tasks.filter(task => task.active == true);
@@ -76,7 +59,7 @@ export const Board: React.FC = () => {
         return acc;
       }, { TODO: [], IN_PROGRESS: [], DONE: [] } as BoardData);
 
-      setBoardData(groupedTasks); 
+      setBoardData(groupedTasks);
     } catch (error) {
       toast({
         title: "Error fetching tasks",
@@ -88,7 +71,12 @@ export const Board: React.FC = () => {
     } finally {
       setLoading(false);
     }
-  };
+  }, [toast]);
+  useEffect(() => {
+    fetchTasks();
+  }, [fetchTasks]);
+
+
 
   const handleDragStart = (event: DragStartEvent) => {
     const { active } = event;
@@ -108,7 +96,7 @@ export const Board: React.FC = () => {
 
       const confirmDelete = window.confirm("Are you sure you want to delete this task?");
       if (!confirmDelete) return;
-      await handleDeleteTask(active.id as string); 
+      await handleDeleteTask(active.id as string);
 
 
       return;
@@ -353,11 +341,11 @@ export const Board: React.FC = () => {
           align={{ base: "center", md: "flex-start" }}
           overflowX="auto"
           pb={4}
-         
+
         >
           {statusOrder.map((status) => (
             <Column
-            
+
               key={status}
               status={status}
               tasks={boardData[status]}
@@ -406,20 +394,20 @@ export const Board: React.FC = () => {
                 value={currentTask?.assignedTo || ""}
                 onChange={(e) => setCurrentTask(prev => ({ ...prev, assignedTo: e.target.value }))}
               />
-            
-                <Input
-                  type="date"
-                  value={currentTask?.dueDate ? new Date(currentTask.dueDate).toISOString().split("T")[0] : ""}
-                  onChange={(e) =>
+
+              <Input
+                type="date"
+                value={currentTask?.dueDate ? new Date(currentTask.dueDate).toISOString().split("T")[0] : ""}
+                onChange={(e) =>
                   setCurrentTask((prev) => ({
                     ...prev,
                     dueDate: e.target.value ? new Date(e.target.value) : undefined,
                   }))
-                  }
-                  placeholder="Due Date"
-                  width="100%"
-                />
-             
+                }
+                placeholder="Due Date"
+                width="100%"
+              />
+
             </VStack>
           </ModalBody>
           <ModalFooter>

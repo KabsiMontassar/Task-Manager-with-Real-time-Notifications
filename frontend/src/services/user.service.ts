@@ -1,92 +1,117 @@
 import api from './api.service';
 import { API_ENDPOINTS } from '../config/api.config';
 import { User } from '../types/user';
+import { AxiosError } from 'axios';
+
+interface ApiError {
+  response?: {
+    data?: {
+      message: string;
+    };
+  };
+}
+
+function getErrorMessage(error: unknown): string {
+  if (typeof error === 'string') {
+    return error;
+  }
+  if (error instanceof Error) {
+    return error.message;
+  }
+  if (isApiError(error)) {
+    return error.response?.data?.message || 'Unknown API error';
+  }
+  return 'Unknown error occurred';
+}
+
+function isApiError(error: unknown): error is ApiError {
+  return (
+    typeof error === 'object' &&
+    error !== null &&
+    'response' in error
+  );
+}
 
 export const userService = {
   getCurrentUser: async (): Promise<User> => {
     try {
-      const response = await api.get(API_ENDPOINTS.USERS.ME);
-      
-      // Update stored user data with latest from server
+      const response = await api.get<User>(API_ENDPOINTS.USERS.ME);
       localStorage.setItem('user', JSON.stringify(response.data));
-      
       return response.data;
-    } catch (error: unknown) {
-      console.error('Error fetching profile:', (error as any)?.response?.data || (error as Error)?.message);
+    } catch (error) {
+      console.error('Error fetching profile:', getErrorMessage(error));
       throw error;
     }
   },
 
   getAllUsers: async (): Promise<User[]> => {
     try {
-      const response = await api.get(`${API_ENDPOINTS.USERS.BASE}/all`);
+      const response = await api.get<User[]>(`${API_ENDPOINTS.USERS.BASE}/all`);
       return response.data;
-    } catch (error: unknown) {
-      console.error('Error fetching users:', (error as any)?.response?.data || (error as Error)?.message);
+    } catch (error) {
+      console.error('Error fetching users:', getErrorMessage(error));
       throw error;
     }
   },
 
   getUserById: async (userId: string): Promise<User> => {
     try {
-      const response = await api.get(API_ENDPOINTS.USERS.BY_ID(userId));
+      const response = await api.get<User>(API_ENDPOINTS.USERS.BY_ID(userId));
       return response.data;
-    } catch (error: unknown) {
-      console.error('Error fetching user by ID:', (error as any)?.response?.data || (error as Error)?.message);
+    } catch (error) {
+      console.error('Error fetching user by ID:', getErrorMessage(error));
       throw error;
     }
   },
 
   getUserByEmail: async (email: string): Promise<User> => {
     try {
-      const response = await api.get(`${API_ENDPOINTS.USERS.BASE}/email/${email}`);
+      const response = await api.get<User>(`${API_ENDPOINTS.USERS.BASE}/email/${email}`);
       return response.data;
-    } catch (error: unknown) {
-      console.error('Error fetching user by email:', (error as any)?.response?.data || (error as Error)?.message);
+    } catch (error) {
+      console.error('Error fetching user by email:', getErrorMessage(error));
       throw error;
     }
   },
 
   updateProfile: async (data: Partial<User>): Promise<User> => {
     try {
-      const user = localStorage.getItem('user');
-      if (!user) throw new Error('No user found');
+      const userJson = localStorage.getItem('user');
+      if (!userJson) throw new Error('No user found');
       
-      const { _id } = JSON.parse(user); // Fix: Use 'id' instead of '_id'
-      const response = await api.put(API_ENDPOINTS.USERS.BY_ID(_id), data);
+      const user: User = JSON.parse(userJson);
+      const response = await api.put<User>(API_ENDPOINTS.USERS.BY_ID(user.id), data);
       
-      // Update stored user data
       localStorage.setItem('user', JSON.stringify(response.data));
-      
       return response.data;
-    } catch (error: unknown) {
-      console.error('Error updating profile:', (error as any)?.response?.data || (error as Error)?.message);
+    } catch (error) {
+      console.error('Error updating profile:', getErrorMessage(error));
       throw error;
     }
   },
 
   updatePassword: async (currentPassword: string, newPassword: string): Promise<void> => {
     try {
-      const user = localStorage.getItem('user');
-      if (!user) throw new Error('No user found');
+      const userJson = localStorage.getItem('user');
+      if (!userJson) throw new Error('No user found');
       
-      const { _id } = JSON.parse(user);
-      await api.put(API_ENDPOINTS.USERS.PASSWORD(_id), {
+      const user: User = JSON.parse(userJson);
+      await api.put(API_ENDPOINTS.USERS.PASSWORD(user.id), {
         currentPassword,
         newPassword
       });
-    } catch (error: unknown) {
-      console.error('Error updating password:', (error as any)?.response?.data || (error as Error)?.message);
+    } catch (error) {
+      console.error('Error updating password:', getErrorMessage(error));
       throw error;
     }
   },
 
   updateUser: async (user: User): Promise<User> => {
     try {
-      const response = await api.put(API_ENDPOINTS.USERS.BY_ID(user.id), user);
+      const response = await api.put<User>(API_ENDPOINTS.USERS.BY_ID(user.id), user);
       return response.data;
-    } catch (error: unknown) {
-      console.error('Error updating user:', (error as any)?.response?.data || (error as Error)?.message);
+    } catch (error) {
+      console.error('Error updating user:', getErrorMessage(error));
       throw error;
     }
   },
