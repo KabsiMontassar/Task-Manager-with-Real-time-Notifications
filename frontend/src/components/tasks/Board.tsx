@@ -30,7 +30,6 @@ import {
 import { taskService } from "../../services/task.service";
 import { Task as TaskType, TaskStatus, TaskPriority } from "../../types/task";
 import Column from "./Column";
-import "react-datepicker/dist/react-datepicker.css";
 import { ArchiveZone } from "./ArchiveZone";
 import { DeleteZone } from "./DeleteZone";
 
