@@ -67,7 +67,10 @@ export class TaskController {
 
   @Put(':id')
   @UsePipes(new ValidationPipe())
-  async update(@Param('id') id: string, @Body() updateTaskDto: UpdateTaskDto): Promise<Task> {
+  async update(
+    @Param('id') id: string,
+    @Body() updateTaskDto: UpdateTaskDto,
+  ): Promise<Task> {
     const task = await this.taskClient
       .send<Task>({ cmd: 'updateTask' }, { id, updateTaskDto })
       .toPromise();
@@ -85,7 +88,9 @@ export class TaskController {
       .toPromise();
 
     if (!result) {
-      throw new Error('Failed to remove the task. No response from the service.');
+      throw new Error(
+        'Failed to remove the task. No response from the service.',
+      );
     }
 
     return result;

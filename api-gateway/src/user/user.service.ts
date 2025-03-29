@@ -16,7 +16,9 @@ export class UserService {
 
   async findById(id: string) {
     console.log('Finding user by ID:', id);
-    return firstValueFrom(this.userServiceClient.send({ cmd: 'get_user' }, { userId: id }));
+    return firstValueFrom(
+      this.userServiceClient.send({ cmd: 'get_user' }, { userId: id }),
+    );
   }
 
   async delete(id: string) {
@@ -24,17 +26,23 @@ export class UserService {
   }
 
   async getProfile(userId: string) {
-    return firstValueFrom(this.userServiceClient.send('user_get_profile', { userId }));
+    return firstValueFrom(
+      this.userServiceClient.send('user_get_profile', { userId }),
+    );
   }
 
   async update(id: string, data: any) {
-    return firstValueFrom(this.userServiceClient.send('user_update', { id, data }));
+    return firstValueFrom(
+      this.userServiceClient.send('user_update', { id, data }),
+    );
   }
 
   async updatePassword(id: string, data: any) {
     try {
       const response = await firstValueFrom(
-        this.userServiceClient.send('user_update_password', { id, data }).pipe()
+        this.userServiceClient
+          .send('user_update_password', { id, data })
+          .pipe(),
       );
       return response;
     } catch (error) {

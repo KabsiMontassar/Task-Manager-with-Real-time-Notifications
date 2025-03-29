@@ -6,7 +6,7 @@ import {
 import { ClientProxy } from '@nestjs/microservices';
 import { firstValueFrom, timeout, catchError } from 'rxjs';
 import { Task } from './models/task.model';
-import { CreateTaskDto , UpdateTaskDto } from './dtos/task.dtos';
+import { CreateTaskDto, UpdateTaskDto } from './dtos/task.dtos';
 @Injectable()
 export class TaskService {
   constructor(

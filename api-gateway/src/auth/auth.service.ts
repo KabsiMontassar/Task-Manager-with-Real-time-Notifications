@@ -1,4 +1,10 @@
-import { Injectable, Inject, UnauthorizedException, BadRequestException, ConflictException } from '@nestjs/common';
+import {
+  Injectable,
+  Inject,
+  UnauthorizedException,
+  BadRequestException,
+  ConflictException,
+} from '@nestjs/common';
 import { ClientProxy } from '@nestjs/microservices';
 import { firstValueFrom } from 'rxjs';
 import { JwtService } from '@nestjs/jwt';
@@ -14,7 +20,10 @@ export class AuthService {
     try {
       console.log('Validating user:', email);
       const user = await firstValueFrom(
-        this.userServiceClient.send({ cmd: 'validate_user' }, { email, password })
+        this.userServiceClient.send(
+          { cmd: 'validate_user' },
+          { email, password },
+        ),
       );
       console.log('User validation result:', user);
 
@@ -35,12 +44,12 @@ export class AuthService {
   async login(user: any) {
     try {
       console.log('Creating JWT token for user:', user);
-      const payload = { 
+      const payload = {
         userId: user._id,
-        email: user.email, 
-        role: user.role 
+        email: user.email,
+        role: user.role,
       };
-      
+
       const token = this.jwtService.sign(payload);
       console.log('JWT token created successfully');
 
@@ -51,8 +60,8 @@ export class AuthService {
           email: user.email,
           firstName: user.firstName,
           lastName: user.lastName,
-          role: user.role
-        }
+          role: user.role,
+        },
       };
     } catch (error) {
       console.error('Login error:', error);
@@ -64,7 +73,7 @@ export class AuthService {
     try {
       console.log('Registering new user:', createUserDto.email);
       const result = await firstValueFrom(
-        this.userServiceClient.send({ cmd: 'register_user' }, createUserDto)
+        this.userServiceClient.send({ cmd: 'register_user' }, createUserDto),
       );
       console.log('Registration result:', result);
 
@@ -75,7 +84,7 @@ export class AuthService {
       const payload = {
         userId: result.user._id,
         email: result.user.email,
-        role: result.user.role
+        role: result.user.role,
       };
 
       const token = this.jwtService.sign(payload);
@@ -87,8 +96,8 @@ export class AuthService {
           email: result.user.email,
           firstName: result.user.firstName,
           lastName: result.user.lastName,
-          role: result.user.role
-        }
+          role: result.user.role,
+        },
       };
     } catch (error) {
       console.error('Registration error:', error);
