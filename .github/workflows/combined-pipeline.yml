@@ -34,25 +34,25 @@ jobs:
       - name: Install Gateway dependencies
         run: |
           cd api-gateway
-          npm ci
+          npm install
           npm install --save-dev jest ts-jest
 
       - name: Install Frontend dependencies
         run: |
           cd frontend
-          npm ci
+          npm install
           npm install --save-dev jest ts-jest
 
       - name: Install Task Service dependencies
         run: |
           cd task-service
-          npm ci
+          npm install
           npm install --save-dev jest ts-jest
 
       - name: Install User Service dependencies
         run: |
           cd user-service
-          npm ci
+          npm install
           npm install --save-dev jest ts-jest
 
   # unit-test:
