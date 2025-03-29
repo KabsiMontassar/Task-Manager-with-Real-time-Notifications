@@ -3,10 +3,10 @@ name: Combined CI/CD Pipeline
 on:
   push:
     branches:
-      - montassar
+      - main  
   pull_request:
     branches:
-      - main
+      - main  
 
 env:
   REGISTRY: ghcr.io/kabsimontassar  
@@ -35,56 +35,90 @@ jobs:
         run: |
           cd api-gateway
           npm install
-          npm install --save-dev jest ts-jest
 
       - name: Install Frontend dependencies
         run: |
           cd frontend
           npm install
-          npm install --save-dev jest ts-jest
 
       - name: Install Task Service dependencies
         run: |
           cd task-service
           npm install
-          npm install --save-dev jest ts-jest
 
       - name: Install User Service dependencies
         run: |
           cd user-service
           npm install
-          npm install --save-dev jest ts-jest
 
-  # unit-test:
-  #   runs-on: ubuntu-latest
-  #   needs: install-dependencies
-  #   steps:
-  #     - name: Checkout code
-  #       uses: actions/checkout@v4
+  lint-and-format:
+    runs-on: ubuntu-latest
+    needs: install-dependencies
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
 
-  #     - name: Run Gateway tests
-  #       run: |
-  #         cd api-gateway
-  #         npx jest --ci --runInBand
+      - name: Run ESLint
+        run: |
+          cd frontend && npx eslint . --ext .ts,.tsx
+          cd ../api-gateway && npx eslint . --ext .ts
+          cd ../task-service && npx eslint . --ext .ts
+          cd ../user-service && npx eslint . --ext .ts
 
-  #     - name: Run Frontend tests
-  #       run: |
-  #         cd frontend
-  #         npx jest --ci --runInBand
+      - name: Run Prettier
+        run: |
+          cd frontend && npx prettier --check .
+          cd ../api-gateway && npx prettier --check .
+          cd ../task-service && npx prettier --check .
+          cd ../user-service && npx prettier --check .
 
-  #     - name: Run Task Service tests
-  #       run: |
-  #         cd task-service
-  #         npx jest --ci --runInBand
+  run-tests:
+    runs-on: ubuntu-latest
+    needs: install-dependencies
+    strategy:
+      fail-fast: true
+      matrix:
+        service: [frontend, api-gateway, task-service, user-service]
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
 
-  #     - name: Run User Service tests
-  #       run: |
-  #         cd user-service
-  #         npx jest --ci --runInBand
+      - name: Run Tests for ${{ matrix.service }}
+        run: |
+          cd ${{ matrix.service }}
+          if [ "${{ matrix.service }}" == "frontend" ]; then
+            npx playwright test
+          else
+            npx mocha --require ts-node/register 'test/**/*.spec.ts' --recursive
+          fi
+
+  security-analysis:
+    runs-on: ubuntu-latest
+    needs: [lint-and-format, run-tests]
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Run ESLint Security Plugin
+        run: |
+          cd frontend && npx eslint . --ext .ts,.tsx --plugin security
+          cd ../api-gateway && npx eslint . --ext .ts --plugin security
+          cd ../task-service && npx eslint . --ext .ts --plugin security
+          cd ../user-service && npx eslint . --ext .ts --plugin security
+
+      - name: Run SonarQube Analysis
+        env:
+          SONAR_TOKEN: ${{ secrets.SONARTOKEN }}
+        run: |
+          sonar-scanner \
+            -Dsonar.projectKey=TaskManager \
+            -Dsonar.sources=. \
+            -Dsonar.host.url=https://sonarcloud.io \
+            -Dsonar.login=$SONAR_TOKEN
 
   build-and-push-docker-images:
     runs-on: ubuntu-latest
-    needs: install-dependencies
+    needs: security-analysis
     permissions:
       contents: read
       packages: write
@@ -102,27 +136,27 @@ jobs:
       - name: Build and push Gateway image
         run: |
           cd api-gateway
-          docker build -t $REGISTRY/api-gateway:$IMAGE_TAG -t $REGISTRY/api-gateway:latest .
-          docker push $REGISTRY/api-gateway:$IMAGE_TAG
-          docker push $REGISTRY/api-gateway:latest
+          docker buildx build --cache-from=type=registry,ref=$REGISTRY/api-gateway:cache \
+                              --cache-to=type=registry,ref=$REGISTRY/api-gateway:cache,mode=max \
+                              -t $REGISTRY/api-gateway:$IMAGE_TAG -t $REGISTRY/api-gateway:latest --push .
 
       - name: Build and push Frontend image
         run: |
           cd frontend
-          docker build -t $REGISTRY/frontend:$IMAGE_TAG -t $REGISTRY/frontend:latest .
-          docker push $REGISTRY/frontend:$IMAGE_TAG
-          docker push $REGISTRY/frontend:latest
+          docker buildx build --cache-from=type=registry,ref=$REGISTRY/frontend:cache \
+                              --cache-to=type=registry,ref=$REGISTRY/frontend:cache,mode=max \
+                              -t $REGISTRY/frontend:$IMAGE_TAG -t $REGISTRY/frontend:latest --push .
 
       - name: Build and push Task Service image
         run: |
           cd task-service
-          docker build -t $REGISTRY/task-service:$IMAGE_TAG -t $REGISTRY/task-service:latest .
-          docker push $REGISTRY/task-service:$IMAGE_TAG
-          docker push $REGISTRY/task-service:latest
+          docker buildx build --cache-from=type=registry,ref=$REGISTRY/task-service:cache \
+                              --cache-to=type=registry,ref=$REGISTRY/task-service:cache,mode=max \
+                              -t $REGISTRY/task-service:$IMAGE_TAG -t $REGISTRY/task-service:latest --push .
 
       - name: Build and push User Service image
         run: |
           cd user-service
-          docker build -t $REGISTRY/user-service:$IMAGE_TAG -t $REGISTRY/user-service:latest .
-          docker push $REGISTRY/user-service:$IMAGE_TAG
-          docker push $REGISTRY/user-service:latest
+          docker buildx build --cache-from=type=registry,ref=$REGISTRY/user-service:cache \
+                              --cache-to=type=registry,ref=$REGISTRY/user-service:cache,mode=max \
+                              -t $REGISTRY/user-service:$IMAGE_TAG -t $REGISTRY/user-service:latest --push .
