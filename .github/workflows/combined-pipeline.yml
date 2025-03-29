@@ -59,7 +59,7 @@ jobs:
           npm install ts-node mocha --save-dev
           npm install prettier --save-dev
 
-  format:
+  Formating:
     runs-on: ubuntu-latest
     needs: install-dependencies
     steps:
@@ -99,6 +99,12 @@ jobs:
     steps:
       - name: Checkout code
         uses: actions/checkout@v4
+
+      - name: Install SonarQube Scanner
+        run: |
+          curl -sSLo sonar-scanner.zip https://binaries.sonarsource.com/Distribution/sonar-scanner-cli/sonar-scanner-cli-4.8.0.2856-linux.zip
+          unzip sonar-scanner.zip -d $HOME
+          export PATH="$HOME/sonar-scanner-4.8.0.2856-linux/bin:$PATH"
 
       - name: Run SonarQube Analysis
         env:
