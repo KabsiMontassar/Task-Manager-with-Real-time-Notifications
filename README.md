@@ -96,20 +96,6 @@ Run the project with:
     npm start
     
 
-### Testing
-
-Task-manager-with-real-time-notifications uses the {**test\_framework**} test framework. Run the test suite with:
-
-**Using [docker](https://www.docker.com/):**
-
-    echo 'INSERT-TEST-COMMAND-HERE'
-    
-
-**Using [npm](https://www.npmjs.com/):**
-
-    npm test
-    
-
 * * *
 
 [⬆ Return](#top)
