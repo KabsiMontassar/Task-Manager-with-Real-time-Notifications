@@ -36,24 +36,28 @@ jobs:
           cd api-gateway
           npm install
           npm install ts-node mocha --save-dev
+          npm install prettier --save-dev
 
       - name: Install Frontend dependencies
         run: |
           cd frontend
           npm install
           npm install @playwright/test --save-dev
+          npm install prettier --save-dev
 
       - name: Install Task Service dependencies
         run: |
           cd task-service
           npm install
           npm install ts-node mocha --save-dev
+          npm install prettier --save-dev
 
       - name: Install User Service dependencies
         run: |
           cd user-service
           npm install
           npm install ts-node mocha --save-dev
+          npm install prettier --save-dev
 
   format:
     runs-on: ubuntu-latest
