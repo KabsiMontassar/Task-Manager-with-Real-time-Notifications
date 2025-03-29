@@ -19,20 +19,48 @@ jobs:
       - name: Checkout code
         uses: actions/checkout@v3
 
+      - name: Cache Gateway Dependencies
+        uses: actions/cache@v4
+        with:
+          path: ./api-gateway/node_modules
+          key: gateway-node-modules-${{ hashFiles('api-gateway/package-lock.json') }}
+          restore-keys: gateway-node-modules-
+
       - name: Install dependencies for Gateway
         run: |
           cd api-gateway
           npm install
+
+      - name: Cache Frontend Dependencies
+        uses: actions/cache@v4
+        with:
+          path: ./frontend/node_modules
+          key: frontend-node-modules-${{ hashFiles('frontend/package-lock.json') }}
+          restore-keys: frontend-node-modules-
 
       - name: Install dependencies for Frontend
         run: |
           cd frontend
           npm install
 
+      - name: Cache Task Service Dependencies
+        uses: actions/cache@v4
+        with:
+          path: ./task-service/node_modules
+          key: task-service-node-modules-${{ hashFiles('task-service/package-lock.json') }}
+          restore-keys: task-service-node-modules-
+
       - name: Install dependencies for Task Service
         run: |
           cd task-service
           npm install
+
+      - name: Cache User Service Dependencies
+        uses: actions/cache@v4
+        with:
+          path: ./user-service/node_modules
+          key: user-service-node-modules-${{ hashFiles('user-service/package-lock.json') }}
+          restore-keys: user-service-node-modules-
 
       - name: Install dependencies for User Service
         run: |
