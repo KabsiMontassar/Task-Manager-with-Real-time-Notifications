@@ -1,0 +1,128 @@
+name: Combined CI/CD Pipeline
+
+on:
+  push:
+    branches:
+      - montassar
+  pull_request:
+    branches:
+      - main
+
+env:
+  REGISTRY: ghcr.io/kabsimontassar  
+  IMAGE_TAG: ${{ github.sha }}
+
+jobs:
+  install-dependencies:
+    runs-on: ubuntu-latest  
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Cache Node Modules
+        uses: actions/cache@v3
+        with:
+          path: |
+            api-gateway/node_modules
+            frontend/node_modules
+            task-service/node_modules
+            user-service/node_modules
+          key: ${{ runner.os }}-node-${{ hashFiles('**/package-lock.json') }}
+          restore-keys: |
+            ${{ runner.os }}-node-
+
+      - name: Install Gateway dependencies
+        run: |
+          cd api-gateway
+          npm install
+          npm install --save-dev jest ts-jest
+
+      - name: Install Frontend dependencies
+        run: |
+          cd frontend
+          npm install
+          npm install --save-dev jest ts-jest
+
+      - name: Install Task Service dependencies
+        run: |
+          cd task-service
+          npm install
+          npm install --save-dev jest ts-jest
+
+      - name: Install User Service dependencies
+        run: |
+          cd user-service
+          npm install
+          npm install --save-dev jest ts-jest
+
+  # unit-test:
+  #   runs-on: ubuntu-latest
+  #   needs: install-dependencies
+  #   steps:
+  #     - name: Checkout code
+  #       uses: actions/checkout@v4
+
+  #     - name: Run Gateway tests
+  #       run: |
+  #         cd api-gateway
+  #         npx jest --ci --runInBand
+
+  #     - name: Run Frontend tests
+  #       run: |
+  #         cd frontend
+  #         npx jest --ci --runInBand
+
+  #     - name: Run Task Service tests
+  #       run: |
+  #         cd task-service
+  #         npx jest --ci --runInBand
+
+  #     - name: Run User Service tests
+  #       run: |
+  #         cd user-service
+  #         npx jest --ci --runInBand
+
+  build-and-push-docker-images:
+    runs-on: ubuntu-latest
+    needs: install-dependencies
+    permissions:
+      contents: read
+      packages: write
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Log in to GitHub Container Registry
+        uses: docker/login-action@v3
+        with:
+          registry: ghcr.io
+          username: ${{ github.actor }}
+          password: ${{ secrets.GITHUB_TOKEN }}  
+
+      - name: Build and push Gateway image
+        run: |
+          cd api-gateway
+          docker build -t $REGISTRY/api-gateway:$IMAGE_TAG -t $REGISTRY/api-gateway:latest .
+          docker push $REGISTRY/api-gateway:$IMAGE_TAG
+          docker push $REGISTRY/api-gateway:latest
+
+      - name: Build and push Frontend image
+        run: |
+          cd frontend
+          docker build -t $REGISTRY/frontend:$IMAGE_TAG -t $REGISTRY/frontend:latest .
+          docker push $REGISTRY/frontend:$IMAGE_TAG
+          docker push $REGISTRY/frontend:latest
+
+      - name: Build and push Task Service image
+        run: |
+          cd task-service
+          docker build -t $REGISTRY/task-service:$IMAGE_TAG -t $REGISTRY/task-service:latest .
+          docker push $REGISTRY/task-service:$IMAGE_TAG
+          docker push $REGISTRY/task-service:latest
+
+      - name: Build and push User Service image
+        run: |
+          cd user-service
+          docker build -t $REGISTRY/user-service:$IMAGE_TAG -t $REGISTRY/user-service:latest .
+          docker push $REGISTRY/user-service:$IMAGE_TAG
+          docker push $REGISTRY/user-service:latest
