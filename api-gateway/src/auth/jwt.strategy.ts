@@ -3,16 +3,20 @@ import { PassportStrategy } from '@nestjs/passport';
 import { ExtractJwt, Strategy } from 'passport-jwt';
 import { Inject } from '@nestjs/common';
 import { ClientProxy } from '@nestjs/microservices';
-import { firstValueFrom } from 'rxjs';
 
-const JWT_SECRET =
-  'b09d24b7e1c4a39c8fc3b15d487b3f8d6ea716c7e8cd2859c9374b6c8c9b3e2f'; // Use the same secret as auth.module
+import * as dotenv from 'dotenv';
+dotenv.config();
 
+const JWT_SECRET = process.env.JWT_SECRET; 
 @Injectable()
 export class JwtStrategy extends PassportStrategy(Strategy) {
   constructor(
     @Inject('USER_SERVICE') private readonly userService: ClientProxy,
   ) {
+    if (!JWT_SECRET) {
+      throw new Error('JWT_SECRET is not defined in the environment variables');
+    }
+
     super({
       jwtFromRequest: ExtractJwt.fromAuthHeaderAsBearerToken(),
       ignoreExpiration: false,
