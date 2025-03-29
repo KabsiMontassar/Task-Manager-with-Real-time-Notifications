@@ -60,11 +60,11 @@ const Login = () => {
       });
 
       navigate("/", { replace: true });
-    } catch (err: any) {
+    } catch (err: unknown) {
       console.error("Login error:", err);
       setError(
-        err.response?.data?.message ||
-          err.message ||
+        (err as any)?.response?.data?.message ||
+          (err as Error)?.message ||
           "Failed to login. Please check your credentials."
       );
     } finally {

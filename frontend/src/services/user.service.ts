@@ -11,8 +11,8 @@ export const userService = {
       localStorage.setItem('user', JSON.stringify(response.data));
       
       return response.data;
-    } catch (error: any) {
-      console.error('Error fetching profile:', error.response?.data || error.message);
+    } catch (error: unknown) {
+      console.error('Error fetching profile:', (error as any)?.response?.data || (error as Error)?.message);
       throw error;
     }
   },
@@ -21,8 +21,8 @@ export const userService = {
     try {
       const response = await api.get(`${API_ENDPOINTS.USERS.BASE}/all`);
       return response.data;
-    } catch (error: any) {
-      console.error('Error fetching users:', error.response?.data || error.message);
+    } catch (error: unknown) {
+      console.error('Error fetching users:', (error as any)?.response?.data || (error as Error)?.message);
       throw error;
     }
   },
@@ -31,8 +31,8 @@ export const userService = {
     try {
       const response = await api.get(API_ENDPOINTS.USERS.BY_ID(userId));
       return response.data;
-    } catch (error: any) {
-      console.error('Error fetching user by ID:', error.response?.data || error.message);
+    } catch (error: unknown) {
+      console.error('Error fetching user by ID:', (error as any)?.response?.data || (error as Error)?.message);
       throw error;
     }
   },
@@ -41,8 +41,8 @@ export const userService = {
     try {
       const response = await api.get(`${API_ENDPOINTS.USERS.BASE}/email/${email}`);
       return response.data;
-    } catch (error: any) {
-      console.error('Error fetching user by email:', error.response?.data || error.message);
+    } catch (error: unknown) {
+      console.error('Error fetching user by email:', (error as any)?.response?.data || (error as Error)?.message);
       throw error;
     }
   },
@@ -59,8 +59,8 @@ export const userService = {
       localStorage.setItem('user', JSON.stringify(response.data));
       
       return response.data;
-    } catch (error: any) {
-      console.error('Error updating profile:', error.response?.data || error.message);
+    } catch (error: unknown) {
+      console.error('Error updating profile:', (error as any)?.response?.data || (error as Error)?.message);
       throw error;
     }
   },
@@ -75,8 +75,8 @@ export const userService = {
         currentPassword,
         newPassword
       });
-    } catch (error: any) {
-      console.error('Error updating password:', error.response?.data || error.message);
+    } catch (error: unknown) {
+      console.error('Error updating password:', (error as any)?.response?.data || (error as Error)?.message);
       throw error;
     }
   },
@@ -85,8 +85,8 @@ export const userService = {
     try {
       const response = await api.put(API_ENDPOINTS.USERS.BY_ID(user.id), user);
       return response.data;
-    } catch (error: any) {
-      console.error('Error updating user:', error.response?.data || error.message);
+    } catch (error: unknown) {
+      console.error('Error updating user:', (error as any)?.response?.data || (error as Error)?.message);
       throw error;
     }
   },

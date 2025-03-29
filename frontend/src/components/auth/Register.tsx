@@ -43,8 +43,10 @@ const Register = () => {
       await authService.register(formData);
       
       navigate('/');
-    } catch (err: any) {
-      setError(err.response?.data?.message || 'Failed to register');
+    } catch (err: unknown) {
+      setError(
+        (err as any)?.response?.data?.message || 'Failed to register'
+      );
     } finally {
       setLoading(false);
     }
