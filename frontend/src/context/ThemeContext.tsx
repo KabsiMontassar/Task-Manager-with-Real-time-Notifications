@@ -15,7 +15,6 @@ export const ThemeProvider: React.FC<{ children: React.ReactNode }> = ({ childre
   useEffect(() => {
     const root = document.documentElement;
     const themeColors = themes[theme];
-    
     Object.entries(themeColors).forEach(([key, value]) => {
       root.style.setProperty(`--${key.toLowerCase()}-color`, value);
     });

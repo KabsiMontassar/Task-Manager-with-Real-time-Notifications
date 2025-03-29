@@ -1,5 +1,5 @@
 // @ts-check
-import eslint from '@eslint/js';
+import eslint from '@eslint/js'; // Ensure this package is installed
 import eslintPluginPrettierRecommended from 'eslint-plugin-prettier/recommended';
 import globals from 'globals';
 import tseslint from 'typescript-eslint';
@@ -8,7 +8,7 @@ export default tseslint.config(
   {
     ignores: ['eslint.config.mjs'],
   },
-  eslint.configs.recommended,
+  eslint.configs.recommended, // Ensure this configuration is compatible
   ...tseslint.configs.recommendedTypeChecked,
   eslintPluginPrettierRecommended,
   {
@@ -17,7 +17,7 @@ export default tseslint.config(
         ...globals.node,
         ...globals.jest,
       },
-      ecmaVersion: 5,
+      ecmaVersion: 2020, // Update to a more recent version if needed
       sourceType: 'module',
       parserOptions: {
         projectService: true,

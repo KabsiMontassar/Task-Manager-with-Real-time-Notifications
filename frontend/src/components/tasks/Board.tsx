@@ -162,7 +162,7 @@ export const Board: React.FC = () => {
     setBoardData(prev => {
       const newSourceItems = prev[sourceColumn].filter(t => t.id !== activeId);
 
-      let newDestinationItems = [...prev[destinationColumn]];
+      const newDestinationItems = [...prev[destinationColumn]];
       if (!isOverColumn) {
         const overIndex = prev[destinationColumn].findIndex(t => t.id === overId);
         newDestinationItems.splice(overIndex, 0, {

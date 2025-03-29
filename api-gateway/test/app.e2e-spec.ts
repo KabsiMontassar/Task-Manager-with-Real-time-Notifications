@@ -34,4 +34,3 @@ function before(callback: () => Promise<void>) {
 function after(callback: () => Promise<void>) {
   return global.after(callback);
 }
-

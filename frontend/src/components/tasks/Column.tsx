@@ -16,7 +16,7 @@ import { useDroppable } from "@dnd-kit/core";
 import { AddIcon } from "@chakra-ui/icons";
 import { Task as TaskType, TaskStatus } from "../../types/task";
 import Task from "./Task";
-import { statusColors, statusLabels } from "./Board";
+import { statusColors, statusLabels } from "./Task.constants";
 
 interface ColumnProps {
   status: TaskStatus;

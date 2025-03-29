@@ -21,7 +21,8 @@ export class UserController {
     }
     console.log('Getting profile for user:', req.user);
     
-    const result = await this.userService.findById(req.user.userId);
+    const userId = (req.user as any).userId; // Cast to 'any' or the correct type
+    const result = await this.userService.findById(userId);
     console.log('Profile result:', result);
     return result;
   }
