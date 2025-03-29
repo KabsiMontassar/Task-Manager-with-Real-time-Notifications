@@ -95,7 +95,7 @@ jobs:
 
   security-analysis:
     runs-on: ubuntu-latest
-    needs: [format, run-tests]
+    needs: [Formating, run-tests]
     steps:
       - name: Checkout code
         uses: actions/checkout@v4
