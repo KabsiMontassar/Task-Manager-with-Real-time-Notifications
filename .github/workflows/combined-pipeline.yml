@@ -100,28 +100,13 @@ jobs:
       - name: Checkout code
         uses: actions/checkout@v4
 
-      - name: Set up Java 17
-        uses: actions/setup-java@v3
-        with:
-          java-version: '17'
-          distribution: 'temurin'
+      - name: Install Snyk CLI
+        run: npm install -g snyk
 
-      - name: Install SonarQube Scanner
-        run: |
-          curl -sSLo sonar-scanner.zip https://binaries.sonarsource.com/Distribution/sonar-scanner-cli/sonar-scanner-cli-4.8.0.2856-linux.zip
-          unzip sonar-scanner.zip -d $HOME
-          export PATH="$HOME/sonar-scanner-4.8.0.2856-linux/bin:$PATH"
-          echo "$HOME/sonar-scanner-4.8.0.2856-linux/bin" >> $GITHUB_PATH
-
-      - name: Run SonarQube Analysis
+      - name: Run Snyk to check for vulnerabilities
+        run: snyk test
         env:
-          SONAR_TOKEN: ${{ secrets.SONARTOKEN }}
-        run: |
-          sonar-scanner \
-            -Dsonar.projectKey=TaskManager \
-            -Dsonar.sources=. \
-            -Dsonar.host.url=https://sonarcloud.io \
-            -Dsonar.login=$SONAR_TOKEN
+          SNYK_TOKEN: ${{ secrets.SNYK_TOKEN }}
 
   build-and-push-docker-images:
     runs-on: ubuntu-latest
