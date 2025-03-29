@@ -16,5 +16,5 @@ COPY . .
 # Expose the port the app runs on
 EXPOSE 3001
 
-# Start the application
-CMD ["npm", "run", "start:prod"]
+# Start the application  this is a nest ts application
+CMD ["npm", "run", "start:dev"]
