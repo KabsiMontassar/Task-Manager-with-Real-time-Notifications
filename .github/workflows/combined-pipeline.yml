@@ -116,7 +116,7 @@ jobs:
           docker build -t $REGISTRY/frontend:latest .
           docker push $REGISTRY/frontend:latest
 
-      - name: Build and push Task Service image
+      - name: Build and push Task Service image 
         run: |
           cd task-service
           docker build -t $REGISTRY/task-service:latest .
