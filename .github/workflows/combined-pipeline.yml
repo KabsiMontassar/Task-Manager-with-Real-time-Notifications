@@ -134,27 +134,19 @@ jobs:
       - name: Build and push Gateway image
         run: |
           cd api-gateway
-          docker buildx build --cache-from=type=registry,ref=$REGISTRY/api-gateway:cache \
-                              --cache-to=type=registry,ref=$REGISTRY/api-gateway:cache,mode=max \
-                              -t $REGISTRY/api-gateway:$IMAGE_TAG -t $REGISTRY/api-gateway:latest --push .
+          docker buildx build -t $REGISTRY/api-gateway:$IMAGE_TAG -t $REGISTRY/api-gateway:latest --push .
 
       - name: Build and push Frontend image
         run: |
           cd frontend
-          docker buildx build --cache-from=type=registry,ref=$REGISTRY/frontend:cache \
-                              --cache-to=type=registry,ref=$REGISTRY/frontend:cache,mode=max \
-                              -t $REGISTRY/frontend:$IMAGE_TAG -t $REGISTRY/frontend:latest --push .
+          docker buildx build -t $REGISTRY/frontend:$IMAGE_TAG -t $REGISTRY/frontend:latest --push .
 
       - name: Build and push Task Service image
         run: |
           cd task-service
-          docker buildx build --cache-from=type=registry,ref=$REGISTRY/task-service:cache \
-                              --cache-to=type=registry,ref=$REGISTRY/task-service:cache,mode=max \
-                              -t $REGISTRY/task-service:$IMAGE_TAG -t $REGISTRY/task-service:latest --push .
+          docker buildx build -t $REGISTRY/task-service:$IMAGE_TAG -t $REGISTRY/task-service:latest --push .
 
       - name: Build and push User Service image
         run: |
           cd user-service
-          docker buildx build --cache-from=type=registry,ref=$REGISTRY/user-service:cache \
-                              --cache-to=type=registry,ref=$REGISTRY/user-service:cache,mode=max \
-                              -t $REGISTRY/user-service:$IMAGE_TAG -t $REGISTRY/user-service:latest --push .
+          docker buildx build -t $REGISTRY/user-service:$IMAGE_TAG -t $REGISTRY/user-service:latest --push .
