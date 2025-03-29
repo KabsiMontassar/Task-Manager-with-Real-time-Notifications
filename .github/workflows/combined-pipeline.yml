@@ -9,8 +9,8 @@ on:
       - main  # pull request to this branch will trigger the pipeline
 
 env:
-  REGISTRY: ghcr.io/KabsiMontassar   
-  CREDENTIALS_ID: ${{ secrets.GITHUBTOKEN }}  
+  REGISTRY: ghcr.io/KabsiMontassar
+  CREDENTIALS_ID: ${{ secrets.GITHUBTOKEN }}
 
 jobs:
   install-dependencies:
@@ -30,6 +30,7 @@ jobs:
         run: |
           cd api-gateway
           npm install
+          npm install --save-dev jest # Ensure Jest is installed
 
       - name: Cache Frontend Dependencies
         uses: actions/cache@v4
@@ -42,6 +43,7 @@ jobs:
         run: |
           cd frontend
           npm install
+          npm install --save-dev jest # Ensure Jest is installed
 
       - name: Cache Task Service Dependencies
         uses: actions/cache@v4
@@ -54,6 +56,7 @@ jobs:
         run: |
           cd task-service
           npm install
+          npm install --save-dev jest # Ensure Jest is installed
 
       - name: Cache User Service Dependencies
         uses: actions/cache@v4
@@ -66,6 +69,7 @@ jobs:
         run: |
           cd user-service
           npm install
+          npm install --save-dev jest # Ensure Jest is installed
 
   unit-test:
     runs-on: windows-latest
@@ -77,22 +81,22 @@ jobs:
       - name: Run unit tests for Gateway
         run: |
           cd api-gateway
-          npm test
+          npm run test -- --ci --runInBand # Ensure Jest runs in CI mode with all tests
 
       - name: Run unit tests for Frontend
         run: |
           cd frontend
-          npm test
+          npm run test -- --ci --runInBand # Ensure Jest runs in CI mode with all tests
 
       - name: Run unit tests for Task Service
         run: |
           cd task-service
-          npm test
+          npm run test -- --ci --runInBand # Ensure Jest runs in CI mode with all tests
 
       - name: Run unit tests for User Service
         run: |
           cd user-service
-          npm test
+          npm run test -- --ci --runInBand # Ensure Jest runs in CI mode with all tests
 
   build-and-push-docker-images:
     runs-on: windows-latest
@@ -102,7 +106,7 @@ jobs:
         uses: actions/checkout@v3
 
       - name: Log in to GitHub Container Registry
-        run: echo "${{ secrets.GITHUBTOKEN }}" | docker login ghcr.io -u <your-github-username> --password-stdin
+        run: echo "${{ secrets.GITHUBTOKEN }}" | docker login ghcr.io -u ${{ github.actor }} --password-stdin
 
       - name: Build and push Gateway image
         run: |
@@ -116,7 +120,7 @@ jobs:
           docker build -t $REGISTRY/frontend:latest .
           docker push $REGISTRY/frontend:latest
 
-      - name: Build and push Task Service image 
+      - name: Build and push Task Service image
         run: |
           cd task-service
           docker build -t $REGISTRY/task-service:latest .
