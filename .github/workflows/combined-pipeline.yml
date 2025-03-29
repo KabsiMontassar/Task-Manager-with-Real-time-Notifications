@@ -81,22 +81,22 @@ jobs:
       - name: Run unit tests for Gateway
         run: |
           cd api-gateway
-          npm run test -- --ci --runInBand # Ensure Jest runs in CI mode with all tests
+          jest --ci --runInBand 
 
       - name: Run unit tests for Frontend
         run: |
           cd frontend
-          npm run test -- --ci --runInBand # Ensure Jest runs in CI mode with all tests
+          jest --ci --runInBand 
 
       - name: Run unit tests for Task Service
         run: |
           cd task-service
-          npm run test -- --ci --runInBand # Ensure Jest runs in CI mode with all tests
+          jest --ci --runInBand
 
       - name: Run unit tests for User Service
         run: |
           cd user-service
-          npm run test -- --ci --runInBand # Ensure Jest runs in CI mode with all tests
+          jest --ci --runInBand
 
   build-and-push-docker-images:
     runs-on: windows-latest
