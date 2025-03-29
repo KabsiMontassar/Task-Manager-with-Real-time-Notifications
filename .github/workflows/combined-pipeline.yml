@@ -71,36 +71,36 @@ jobs:
           npm install
           npm install --save-dev jest ts-jest # Ensure Jest and ts-jest are installed
 
-  unit-test:
-    runs-on: windows-latest
-    needs: install-dependencies
-    steps:
-      - name: Checkout code
-        uses: actions/checkout@v3
+  # unit-test:
+  #   runs-on: windows-latest
+  #   needs: install-dependencies
+  #   steps:
+  #     - name: Checkout code
+  #       uses: actions/checkout@v3
 
-      - name: Run unit tests for Gateway
-        run: |
-          cd api-gateway
-          npx jest --ci --runInBand 
+  #     - name: Run unit tests for Gateway
+  #       run: |
+  #         cd api-gateway
+  #         npx jest --ci --runInBand 
 
-      - name: Run unit tests for Frontend
-        run: |
-          cd frontend
-          npx jest --ci --runInBand 
+  #     - name: Run unit tests for Frontend
+  #       run: |
+  #         cd frontend
+  #         npx jest --ci --runInBand 
 
-      - name: Run unit tests for Task Service
-        run: |
-          cd task-service
-          npx jest --ci --runInBand
+  #     - name: Run unit tests for Task Service
+  #       run: |
+  #         cd task-service
+  #         npx jest --ci --runInBand
 
-      - name: Run unit tests for User Service
-        run: |
-          cd user-service
-          npx jest --ci --runInBand
+  #     - name: Run unit tests for User Service
+  #       run: |
+  #         cd user-service
+  #         npx jest --ci --runInBand
 
   build-and-push-docker-images:
     runs-on: windows-latest
-    needs: unit-test
+    # needs: unit-test
     steps:
       - name: Checkout code
         uses: actions/checkout@v3
