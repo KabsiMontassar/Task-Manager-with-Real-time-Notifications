@@ -81,22 +81,22 @@ jobs:
       - name: Run unit tests for Gateway
         run: |
           cd api-gateway
-          jest --ci --runInBand 
+          npx jest --ci --runInBand 
 
       - name: Run unit tests for Frontend
         run: |
           cd frontend
-          jest --ci --runInBand 
+          npx jest --ci --runInBand 
 
       - name: Run unit tests for Task Service
         run: |
           cd task-service
-          jest --ci --runInBand
+          npx jest --ci --runInBand
 
       - name: Run unit tests for User Service
         run: |
           cd user-service
-          jest --ci --runInBand
+          npx jest --ci --runInBand
 
   build-and-push-docker-images:
     runs-on: windows-latest
