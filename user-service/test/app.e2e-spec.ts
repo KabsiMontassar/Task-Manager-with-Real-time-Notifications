@@ -28,4 +28,17 @@ describe('AppController (e2e)', function () {
     expect(res.text).to.equal('Hello World!');
   });
 });
+function after(hook: () => Promise<void>) {
+  // Executes the provided hook after the test suite completes
+  afterEach(async () => {
+    await hook();
+  });
+}
+function before(hook: () => Promise<void>) {
+  // Executes the provided hook before the test suite starts
+  beforeEach(async () => {
+    await hook();
+  });
+}
+
 

@@ -4,6 +4,7 @@ import { INestApplication } from '@nestjs/common';
 import { Test } from '@nestjs/testing';
 import { AppModule } from './../src/app.module';
 
+
 chai.use(chaiHttp);
 
 describe('AppController (e2e)', function () {
@@ -28,4 +29,17 @@ describe('AppController (e2e)', function () {
     expect(res.text).to.equal('Hello World!');
   });
 });
+// Removed duplicate implementation of the 'after' function.
+function after(arg0: () => Promise<void>) {
+  throw new Error('Function not implemented.');
+}
+function before(callback: () => Promise<void>) {
+  (async () => {
+    try {
+      await callback();
+    } catch (error) {
+      console.error('Error in before hook:', error);
+    }
+  })();
+}
 

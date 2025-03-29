@@ -28,4 +28,10 @@ describe('AppController (e2e)', function () {
     expect(res.text).to.equal('Hello World!');
   });
 });
+function before(callback: () => Promise<void>) {
+  return global.before(callback);
+}
+function after(callback: () => Promise<void>) {
+  return global.after(callback);
+}
 
